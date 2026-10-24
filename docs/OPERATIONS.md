@@ -11,6 +11,8 @@
 | 지도 | 카카오맵 JavaScript SDK, PAW_MAP 앱 키 공유 | 브라우저 |
 | 실거래 원천 | data.go.kr 국토교통부 실거래가 API | Cron에서만 호출 |
 
+빌드 생략(Ignored Build Step, 2026-10-24): `git diff --quiet HEAD^ HEAD -- . ':(exclude)docs' ':(exclude)tasks' ':(exclude)*.md'` — 문서(`docs/`, `tasks/`, `*.md`)만 바뀐 커밋은 빌드하지 않는다(종료 코드 0 = 생략). 계기: Production 브랜치 `main`에 문서만 있어 Phase 2 문서 커밋마다 Production 빌드가 실패(`npm ci`)하고 실패 메일이 옴. 실패 배포는 Production 주소를 바꾸지 않았음.
+
 환경 변수(Vercel, Production·Preview): `DATABASE_URL`(Sensitive), `DATABASE_SSL=require`, `VITE_KAKAO_MAP_JS_KEY`, (Cron 승인 후) `CRON_SECRET`, `DATA_GO_KR_SERVICE_KEY`. 값은 저장소·로그·문서에 남기지 않는다.
 
 ## 2. 월 0원 체크리스트
