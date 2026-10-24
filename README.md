@@ -10,3 +10,19 @@
 - [Claude Code 지침](CLAUDE.md) · [Codex 지침](AGENTS.md)
 
 **개발 순서:** TASK-001부터 승인 후 순차 진행. 실제 API 호출, 키·쿼터·가격·응답 필드 확인은 개발 단계에서만 수행. Secret을 저장소에 커밋하지 않는다.
+
+## 로컬 개발 (TASK-002)
+
+요구사항: Node 20+, PostgreSQL 16
+
+```bash
+npm install
+cp .env.example .env          # 값 채우기. .env는 커밋 금지
+npm run db:migrate            # db/migrations/*.sql 순서 적용
+npm run dev                   # web: http://localhost:5173, api: http://localhost:3001
+npm test                      # TEST_DATABASE_URL DB는 테스트가 초기화함
+npm run build                 # 타입 검사 + 브라우저 env 노출 검사 + 번들
+```
+
+- 구조: `src/`(React 화면), `api/`(Vercel API Routes), `server/`(핸들러·DB·설정), `db/migrations/`(SQL), `scripts/`(마이그레이션·점검), `tests/`
+- 서버 전용 값(`DATABASE_URL`, `DATA_GO_KR_SERVICE_KEY`)에는 `VITE_` 접두어를 붙이지 않는다. `npm run check:env-exposure`가 `src/`의 허용되지 않은 env 참조를 막는다.

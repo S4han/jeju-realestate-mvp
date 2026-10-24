@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+.vercel/
+*.log
+
+# Secrets: never commit real environment files.
+.env
+.env.*
+!.env.example
