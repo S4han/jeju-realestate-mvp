@@ -3,7 +3,7 @@
 새 세션에서 이 문서와 docs/ACCEPTANCE_RESULTS.md, tasks/TASK-009.md를 먼저 읽는다. 모든 외부 실행 전에 사용자 승인을 받는다(CLAUDE.md).
 
 ## 현재 상태 (2026-10-24)
-- TASK-001~008 완료(사용자 승인). TASK-009 승인됨, 단계별 승인 진행 중 — Supabase 적재·Data API 차단 확인 완료, 다음은 Vercel 배포
+- TASK-001~008 완료(사용자 승인). TASK-009 승인됨, 단계별 승인 진행 중 — 1차 완료 보고함(공개 보류). 남은 일은 docs/OPERATIONS.md 5절 '공개 전 남은 결정'
 - 사용자 결정: 완전 비상업 / 신축 단지는 보류(A안) / 지도는 PAW_MAP 앱 키 공유(비즈월렛 미연결) / Vercel Hobby + Supabase Free
 - Supabase: 사용자가 **서울(ap-northeast-2)** 프로젝트를 생성함(뭄바이 프로젝트는 리전 문제로 다시 만듦). 무료 유료 추가 기능인 IPv4 add-on은 사용하지 않음
   - 접속: Shared pooler, transaction mode, `aws-0-ap-northeast-2.pooler.supabase.com:6543`
