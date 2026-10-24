@@ -14,7 +14,7 @@ describe.skipIf(!url)("database schema", () => {
   beforeAll(async () => {
     pool = createPool(url!, "disable");
     await pool.query("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
-    expect(await migrate(pool)).toEqual(expect.arrayContaining(["0001_init.sql", "0002_reference_location.sql", "0003_transaction_pnu.sql"]));
+    expect(await migrate(pool)).toEqual(expect.arrayContaining(["0001_init.sql", "0002_reference_location.sql", "0003_transaction_pnu.sql", "0004_lock_down_public_api.sql"]));
   });
   afterAll(async () => {
     await pool?.end();

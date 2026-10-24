@@ -40,5 +40,8 @@
     "api/cron/collect-transactions.ts": {
       "maxDuration": 60
     }
-  }
+  },
+  "regions": [
+    "icn1"
+  ]
 }
