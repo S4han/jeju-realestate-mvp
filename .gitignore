@@ -8,3 +8,6 @@ coverage/
 .env
 .env.*
 !.env.example
+
+# Data dumps and raw source files (public repo; redistribution terms unverified).
+*.dump
