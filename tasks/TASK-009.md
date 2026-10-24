@@ -1,6 +1,6 @@
 # TASK-009 배포·운영 검증
 
-상태: 진행 중 · Supabase 마이그레이션·데이터 적재 완료(건수 대조 일치), Data API 차단 실제 확인 대기 · 인계 메모 docs/TASK-009_HANDOFF.md
+상태: 진행 중 · Supabase 마이그레이션·데이터 적재 완료(건수 대조 일치), Data API 차단 실제 확인 완료, Vercel 배포 대기 · 인계 메모 docs/TASK-009_HANDOFF.md
 
 ## 목적
 무료 DB/호스팅/지도 실제 조건, GitHub 배포, 모니터링, 롤백, 운영 체크리스트
