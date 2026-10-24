@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "db:migrate": "node --env-file-if-exists=.env --import tsx scripts/migrate.ts",
     "test": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run",
-    "check:env-exposure": "tsx scripts/check-env-exposure.ts"
+    "check:env-exposure": "tsx scripts/check-env-exposure.ts",
+    "import:reference": "node --env-file-if-exists=.env --import tsx scripts/import-reference.ts"
   },
   "dependencies": {
     "pg": "^8.23.1",
@@ -28,8 +29,11 @@
     "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@types/shapefile": "^0.6.4",
     "@vitejs/plugin-react": "^6.1.2",
     "concurrently": "^10.0.6",
+    "proj4": "^2.22.0",
+    "shapefile": "^0.6.6",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",

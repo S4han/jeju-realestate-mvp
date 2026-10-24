@@ -10,7 +10,9 @@ type SourceStatus = {
   delayed: boolean;
 };
 
-const STALE_AFTER_HOURS = 36; // daily batch + margin
+// Daily transaction batches go stale after a day plus margin; reference data is refreshed yearly.
+const STALE_AFTER_HOURS: Record<string, number> = { REB_COMPLEX: 400 * 24, CADASTRAL: 400 * 24 };
+const DEFAULT_STALE_AFTER_HOURS = 36;
 
 // GET /api/system/data-status: freshness of each source (FR-019, FR-023).
 export async function getDataStatus(pool: pg.Pool, now: Date = new Date()): Promise<HandlerResult> {
@@ -35,7 +37,9 @@ export async function getDataStatus(pool: pg.Pool, now: Date = new Date()): Prom
       last_success_at: r.last_success_at?.toISOString() ?? null,
       last_attempt_at: r.last_attempt_at?.toISOString() ?? null,
       last_status: r.last_status,
-      delayed: !r.last_success_at || now.getTime() - r.last_success_at.getTime() > STALE_AFTER_HOURS * 3_600_000,
+      delayed:
+        !r.last_success_at ||
+        now.getTime() - r.last_success_at.getTime() > (STALE_AFTER_HOURS[r.source_id] ?? DEFAULT_STALE_AFTER_HOURS) * 3_600_000,
     }));
     const status = sources.length === 0 ? "NO_DATA" : sources.some((s) => s.delayed) ? "DELAYED" : "OK";
     return { status: 200, body: { status, sources, generated_at: now.toISOString() }, cacheSeconds: 60 };

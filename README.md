@@ -26,3 +26,16 @@ npm run build                 # 타입 검사 + 브라우저 env 노출 검사 +
 
 - 구조: `src/`(React 화면), `api/`(Vercel API Routes), `server/`(핸들러·DB·설정), `db/migrations/`(SQL), `scripts/`(마이그레이션·점검), `tests/`
 - 서버 전용 값(`DATABASE_URL`, `DATA_GO_KR_SERVICE_KEY`)에는 `VITE_` 접두어를 붙이지 않는다. `npm run check:env-exposure`가 `src/`의 허용되지 않은 env 참조를 막는다.
+
+## 단지 기준정보·좌표 적재 (TASK-003)
+
+```bash
+npm run import:reference -- \
+  --reb <getAptInfo 응답 page1.json> --reb <page2.json> \
+  --cadastral <연속지적도 경로(확장자 제외), 예: data/AL_D002_50_20261008> \
+  --reb-as-of 2026-09-01 [--dry-run]
+```
+
+- 입력은 로컬 파일만 사용한다(네트워크 호출 없음). 원본 데이터 파일은 저장소에 커밋하지 않는다.
+- 한국부동산원 `COMPLEX_PK` 기준으로 upsert하며, 다시 실행해도 결과가 같다. 한 행이라도 실패하면 전체를 롤백한다.
+- 좌표는 PNU 필지 중심점이다(EPSG:5186 → WGS84). 의심 필지는 `REVIEW`, 필지가 없으면 `NONE`이며 둘 다 마커를 만들지 않는다. 대상 목록: docs/LOCATION_REVIEW.md

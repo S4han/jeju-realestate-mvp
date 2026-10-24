@@ -1,6 +1,6 @@
 # TASK-002 프로젝트 및 DB 기본 구성
 
-상태: 완료(사용자 승인 대기) · 2026-10-24
+상태: 완료(2026-10-24 사용자 승인)
 
 ## 목적
 React/TypeScript/Vite/Tailwind, TypeScript API Routes, PostgreSQL 스키마·마이그레이션

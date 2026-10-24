@@ -14,7 +14,7 @@ describe.skipIf(!url)("database schema", () => {
   beforeAll(async () => {
     pool = createPool(url!, "disable");
     await pool.query("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
-    expect(await migrate(pool)).toEqual(["0001_init.sql"]);
+    expect(await migrate(pool)).toEqual(expect.arrayContaining(["0001_init.sql", "0002_reference_location.sql"]));
   });
   afterAll(async () => {
     await pool?.end();
@@ -127,6 +127,15 @@ describe.skipIf(!url)("database schema", () => {
       expect(rent.delayed).toBe(true);
       expect(rent.last_status).toBe("FAILED");
       expect(rent.last_success_at).toBe("2026-10-20T01:05:00.000Z");
+    });
+
+    it("does not flag yearly reference data as delayed after a few days", async () => {
+      await pool.query("TRUNCATE sync_jobs");
+      await pool.query(`INSERT INTO sync_jobs (source_id, status, started_at, completed_at)
+        VALUES ('REB_COMPLEX','SUCCESS','2026-09-01T00:00:00Z','2026-09-01T00:01:00Z')`);
+      expect(((await getDataStatus(pool, now)).body as { status: string }).status).toBe("OK");
+      const muchLater = new Date("2027-11-01T00:00:00Z");
+      expect(((await getDataStatus(pool, muchLater)).body as { status: string }).status).toBe("DELAYED");
     });
   });
 });
