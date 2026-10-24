@@ -15,7 +15,10 @@
 2. 연결 확인: `SELECT version()` (SSL 필요, `DATABASE_SSL=require`)
 3. 마이그레이션: `DATABASE_URL="$SUPABASE_DATABASE_URL" DATABASE_SSL=require node --import tsx scripts/migrate.ts` → 0001~0004
 4. 데이터 이전: 로컬 DB가 있으면 `SOURCE_DATABASE_URL=<로컬> TARGET_DATABASE_URL="$SUPABASE_DATABASE_URL" scripts/copy-to-remote.sh`(건수 대조)
-   - 새 컨테이너에는 로컬 DB 데이터가 없다. 그럴 때는 원격에 직접 다시 적재한다: `npm run import:reference`(한국부동산원 JSON과 지적도 SHP는 사용자 파일, 구글 드라이브 `AL_D002_50_20261008.zip`) + `npm run collect -- --mode initial --max-calls 60`(실거래 API 호출이므로 **별도 승인 필요**) + `npm run match`
+   - 새 컨테이너에는 로컬 DB 데이터가 없다. **1순위: 데이터 백업 파일 복원**(API 재호출 없음)
+     - 파일: `jeju_data_20261024.dump`(pg_dump custom 형식, 데이터만, 487KB, 7개 테이블: 단지 1,153 / 거래 7,068 / 확정 매칭 6,920). 사용자 승인 시 사용자 구글 드라이브에 업로드
+     - 복원: 마이그레이션한 빈 DB에 `pg_restore --data-only --no-owner --single-transaction -d "$SUPABASE_DATABASE_URL?sslmode=require" jeju_data_20261024.dump` (로컬에서 복원 시험 완료)
+   - 2순위(백업이 없을 때): 원격에 직접 다시 적재한다: `npm run import:reference`(한국부동산원 JSON과 지적도 SHP는 사용자 파일, 구글 드라이브 `AL_D002_50_20261008.zip`) + `npm run collect -- --mode initial --max-calls 60`(실거래 API 호출이므로 **별도 승인 필요**) + `npm run match`
    - pg_dump/psql의 sslmode: 접속 문자열에 `?sslmode=require`를 붙여 사용
 5. 공개 Data API 차단 확인(anon key로 REST 조회 시 데이터가 안 보여야 함, 0004 RLS)
 6. Vercel(Hobby): 프로젝트 생성·GitHub 연결, 환경변수(`DATABASE_URL`=Supabase pooler, `DATABASE_SSL=require`, `DATA_GO_KR_SERVICE_KEY`, `CRON_SECRET`, `VITE_KAKAO_MAP_JS_KEY`), 리전 icn1 허용 여부, Cron 1회 실행, 보안 헤더 확인
