@@ -65,7 +65,7 @@
 - [ ] 위 ⬜ 항목(특히 카카오·Vercel·Supabase의 한도 초과 시 동작) 확인
 - [ ] Cron 가동(별도 승인, data.go.kr 호출)
 - [x] Production을 현재 브랜치 코드로 배포(2026-10-24, `5882caf`, `dpl_GHoGj…`). 접근 보호 유지(비공개). 주의: 프로덕션 브랜치 설정은 main이라 브랜치 push는 Preview로만 배포되고, Production 갱신은 수동 배포가 필요
-- [ ] 카카오 허용 도메인에 Production 도메인 `https://jeju-realestate-mvp.vercel.app` 추가(사용자). Production 응답에는 Vercel이 `noindex`를 붙이지 않지만 로그인 보호로 크롤링 불가
+- [x] 카카오 허용 도메인에 Production 도메인 `https://jeju-realestate-mvp.vercel.app` 추가(사용자, 2026-10-24) — 휴대폰에서 Production 지도 표시 확인(사용자). Production 응답에는 Vercel이 `noindex`를 붙이지 않지만 로그인 보호로 크롤링 불가
 - [ ] 접근 보호 해제 여부(공개 범위) — 사용자 최종 결정
 - [ ] 배포 환경 성능: **목표 미달로 측정됨, 원인 분석 중**(아래 6절)
 
