@@ -134,3 +134,21 @@
 - 실거래끼리 같은 단지인지는 원천이 준 `aptSeq`로 판정하면 된다(1단계, 확정).
 - `aptSeq`와 단지 기준정보(한국부동산원 단지 식별정보·K-APT)를 연결하는 일이 TASK-003·005의 핵심 과제가 된다. 연결 키 후보는 `sggCd+umdCd+bonbun+bubun`(지번 PNU 구성요소)과 도로명 코드다. 이것이 맞는지는 단지정보 API를 실제로 호출해 확인해야 한다.
 - `aptSeq`가 무엇을 가리키는 식별자인지(단지 단위인지, 동일 지번 내 여러 단지는 어떻게 되는지)는 공식 정의를 확인하지 못했다. 12개월 데이터로 1:1 관계를 다시 검증한다.
+
+## 문서 검토: 한국부동산원 공동주택 단지 식별정보 조회 서비스 (2026-10-24, 실호출 전)
+
+출처: 사용자가 제공한 공식 활용가이드(DOCX, 파일명 기준일 260901). 아래는 **문서 기준**이다.
+
+- 호스트: **`api.odcloud.kr`** (data.go.kr 통합 게이트웨이, `apis.data.go.kr`와 다름). 이 세션의 네트워크 정책에서는 현재 **차단**된다(프록시 CONNECT 403, 키 없이 연결만 시도해 확인함).
+- 서비스: `AptIdInfoSvc` v1. 응답 JSON/XML, 데이터 갱신 **매년**(전년도 사용승인된 공시대상 공동주택 기준).
+- 오퍼레이션:
+  - `GET https://api.odcloud.kr/api/AptIdInfoSvc/v1/getAptInfo`: 기본정보
+  - `.../getDongInfo`: 동정보
+  - `.../getHistInfo`: 단지명 이력
+- 공통 파라미터: `page`, `perPage`, `serviceKey`. 조건 필터는 `cond[COMPLEX_PK::EQ]`, `cond[ADRES::LIKE]`(기본정보만) 형식이다.
+- 기본정보 응답 필드: `COMPLEX_PK`(단지고유번호 14자리), **`PNU`(필지고유번호 19자리)**, `ADRES`(지번주소), `ROAD_ADRES`, `COMPLEX_NM1`(공시가격 단지명), `COMPLEX_NM2`(건축물대장), `COMPLEX_NM3`(도로명주소), `COMPLEX_GB_CD`(1 아파트/2 연립/3 다세대), `DONG_CNT`, `UNIT_CNT`, `USEAPR_DT`
+- 동정보: `DONG_NM1~3`, `GRND_FLR_CNT`. 이력: `NM_CHAN_YEAR`, `COMPLEX_EX_NM`, `COMPLEX_PR_NM`
+- 응답 메타: `currentCount`, `matchCount`, `page`, `perPage`, `totalCount`. 오류는 HTTP 200/401/500.
+- **매칭 관점**: PNU 19자리 = 법정동코드 10자리(`sggCd`5 + `umdCd`5) + 산구분 1자리 + 본번 4자리 + 부번 4자리다. 매매 상세 API의 `sggCd+umdCd+landCd+bonbun+bubun`으로 같은 형식을 만들 수 있다(❓ `landCd`(1=일반)와 PNU 산구분(1=일반, 2=산) 값 체계가 같은지 실측 필요).
+- 제주 범위 조회는 `cond[ADRES::LIKE]=제주`로 가능할 것으로 보인다. 전국 totalCount는 문서 예시 기준 44,064건이다.
+- 대안: 같은 데이터가 파일로도 제공된다(data.go.kr 15106861 기본정보, 15106867 단지명 이력).
