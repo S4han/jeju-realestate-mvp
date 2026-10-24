@@ -14,7 +14,7 @@ describe.skipIf(!url)("database schema", () => {
   beforeAll(async () => {
     pool = createPool(url!, "disable");
     await pool.query("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
-    expect(await migrate(pool)).toEqual(expect.arrayContaining(["0001_init.sql", "0002_reference_location.sql"]));
+    expect(await migrate(pool)).toEqual(expect.arrayContaining(["0001_init.sql", "0002_reference_location.sql", "0003_transaction_pnu.sql"]));
   });
   afterAll(async () => {
     await pool?.end();
@@ -113,7 +113,10 @@ describe.skipIf(!url)("database schema", () => {
     it("reports OK for a fresh success and DELAYED when the last success is stale", async () => {
       await pool.query(`INSERT INTO sync_jobs (source_id, city_code, period, status, started_at, completed_at)
         VALUES ('MOLIT_SALE','50110','202610','SUCCESS','2026-10-24T01:00:00Z','2026-10-24T01:05:00Z')`);
-      expect(((await getDataStatus(pool, now)).body as { status: string }).status).toBe("OK");
+      // Fresh, but the other 11 months were never collected → PARTIAL, not DELAYED.
+      const fresh = (await getDataStatus(pool, now)).body as { status: string; sources: { delayed: boolean }[] };
+      expect(fresh.status).toBe("PARTIAL");
+      expect(fresh.sources[0]!.delayed).toBe(false);
 
       await pool.query(`INSERT INTO sync_jobs (source_id, city_code, period, status, started_at, completed_at)
         VALUES ('MOLIT_RENT','50110','202610','SUCCESS','2026-10-20T01:00:00Z','2026-10-20T01:05:00Z'),

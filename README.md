@@ -39,3 +39,18 @@ npm run import:reference -- \
 - 입력은 로컬 파일만 사용한다(네트워크 호출 없음). 원본 데이터 파일은 저장소에 커밋하지 않는다.
 - 한국부동산원 `COMPLEX_PK` 기준으로 upsert하며, 다시 실행해도 결과가 같다. 한 행이라도 실패하면 전체를 롤백한다.
 - 좌표는 PNU 필지 중심점이다(EPSG:5186 → WGS84). 의심 필지는 `REVIEW`, 필지가 없으면 `NONE`이며 둘 다 마커를 만들지 않는다. 대상 목록: docs/LOCATION_REVIEW.md
+
+## 실거래 수집 (TASK-004)
+
+```bash
+npm run collect -- --mode initial --max-calls 60       # 현재 월 포함 최근 12개월(KST)
+npm run collect -- --mode incremental --max-calls 20   # 최근 4개월 재수집(정정·해제 반영)
+npm run collect -- --months 202608,202609 --max-calls 10
+```
+
+- 매매는 상세 API(`RTMSDataSvcAptTradeDev`, 1,000행/페이지), 전월세는 `RTMSDataSvcAptRent`(400행/페이지)를 쓴다.
+- `--max-calls`는 필수다(이번 실행의 외부 호출 상한). 출처별 일일 상한은 `API_DAILY_CALL_LIMIT`(기본 300)이고 `api_usage`에 기록한다.
+- 한 달 치는 모든 페이지를 받았을 때만 반영한다. 실패하면 그 달의 기존 데이터를 그대로 둔다. 읽을 수 없는 행이 있으면 PARTIAL로 기록하고, 기존 행을 사라진 것으로 처리하지 않는다.
+- 해제 거래는 `CANCELLED`로 보존한다. 같은 내용의 행은 `occurrence`로 구분한다. 원천에서 사라진 행은 `MISSING_FROM_SOURCE`로 표시하며 삭제하지 않는다.
+- 운영: `api/cron/collect-transactions.ts`(Vercel Cron, 매일 03:00 KST, `CRON_SECRET` 필요, 1회 최대 30호출)
+- 이 클라우드 환경에서는 `NODE_USE_ENV_PROXY=1`로 프록시를 쓴다(스크립트에 포함).

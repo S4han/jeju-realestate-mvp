@@ -23,6 +23,24 @@ describe("data status client", () => {
     expect(msg).toContain("2026");
   });
 
+  it("names the missing months when data is partial", () => {
+    const msg = describeStatus({
+      kind: "ready",
+      data: {
+        status: "PARTIAL",
+        sources: [{ source_id: "MOLIT_SALE", city_code: "50110", last_success_at: "2026-10-24T00:00:00Z", delayed: false }],
+        missing_periods: [
+          { source_id: "MOLIT_SALE", city_code: "50110", period: "202605" },
+          { source_id: "MOLIT_RENT", city_code: "50130", period: "202605" },
+          { source_id: "MOLIT_RENT", city_code: "50130", period: "202512" },
+        ],
+        generated_at: "",
+      },
+    });
+    expect(msg).toContain("누락");
+    expect(msg).toContain("2025.12, 2026.05");
+  });
+
   it("maps HTTP errors and network failures to the error state", async () => {
     const http503 = (async () => new Response("{}", { status: 503 })) as typeof fetch;
     const broken = (async () => {

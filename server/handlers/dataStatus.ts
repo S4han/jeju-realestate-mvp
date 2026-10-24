@@ -1,4 +1,5 @@
 import type pg from "pg";
+import { recentMonths } from "../collect/months";
 import { serviceUnavailable, type HandlerResult } from "../http";
 
 type SourceStatus = {
@@ -41,9 +42,32 @@ export async function getDataStatus(pool: pg.Pool, now: Date = new Date()): Prom
         !r.last_success_at ||
         now.getTime() - r.last_success_at.getTime() > (STALE_AFTER_HOURS[r.source_id] ?? DEFAULT_STALE_AFTER_HOURS) * 3_600_000,
     }));
-    const status = sources.length === 0 ? "NO_DATA" : sources.some((s) => s.delayed) ? "DELAYED" : "OK";
-    return { status: 200, body: { status, sources, generated_at: now.toISOString() }, cacheSeconds: 60 };
+    const missing_periods = await findMissingPeriods(pool, now);
+    const status =
+      sources.length === 0 ? "NO_DATA" : sources.some((s) => s.delayed) ? "DELAYED" : missing_periods.length ? "PARTIAL" : "OK";
+    return { status: 200, body: { status, sources, missing_periods, generated_at: now.toISOString() }, cacheSeconds: 60 };
   } catch {
     return serviceUnavailable("DB_UNAVAILABLE");
   }
+}
+
+const TRANSACTION_SOURCES = ["MOLIT_SALE", "MOLIT_RENT"];
+const CITIES = ["50110", "50130"];
+
+// Months in the 12-month window with no successful (or partial) collection yet (PRD: 누락 기간 표시).
+async function findMissingPeriods(pool: pg.Pool, now: Date) {
+  const months = recentMonths(12, now);
+  const { rows } = await pool.query<{ source_id: string; city_code: string; period: string }>(
+    `SELECT DISTINCT source_id, city_code, period FROM sync_jobs
+      WHERE source_id = ANY($1) AND status IN ('SUCCESS', 'PARTIAL') AND period = ANY($2)`,
+    [TRANSACTION_SOURCES, months],
+  );
+  const anyTransactionJob = await pool.query("SELECT 1 FROM sync_jobs WHERE source_id = ANY($1) LIMIT 1", [TRANSACTION_SOURCES]);
+  if (!anyTransactionJob.rowCount) return [];
+  const have = new Set(rows.map((r) => `${r.source_id}|${r.city_code}|${r.period}`));
+  const missing: { source_id: string; city_code: string; period: string }[] = [];
+  for (const source_id of TRANSACTION_SOURCES)
+    for (const city_code of CITIES)
+      for (const period of months) if (!have.has(`${source_id}|${city_code}|${period}`)) missing.push({ source_id, city_code, period });
+  return missing;
 }
