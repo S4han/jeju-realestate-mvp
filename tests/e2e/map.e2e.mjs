@@ -95,6 +95,62 @@ try {
   const mapBtnDisabled = await p2.isDisabled("button[aria-pressed] >> text=지도");
   check("map toggle is disabled after failure", mapBtnDisabled);
   if (shots) await p2.screenshot({ path: `${shots}/task006_fallback.png` });
+  await p2.close();
+
+  // 3) Transaction detail (TASK-007)
+  const p3 = await browser.newPage(ctx);
+  const p3errors = [];
+  p3.on("pageerror", (e) => p3errors.push(e.message));
+  await p3.route("https://dapi.kakao.com/**", (r) => r.fulfill({ contentType: "application/javascript", body: fakeSdk }));
+  await p3.goto("http://localhost:5179/");
+  await p3.fill("input[role=combobox]", "노형뜨란채");
+  await p3.click("li[role=option] >> text=노형뜨란채");
+  await p3.click("text=거래 상세보기");
+  await p3.waitForSelector("main ul li");
+  const saleRows = await p3.$$eval("main ul li", (els) => els.length);
+  const summary = await p3.textContent("main p.mb-2");
+  check("detail lists confirmed sales (20 per page)", saleRows === 20 && /2025\.11 ~ 2026\.10 · \d+건/.test(summary), `${saleRows} rows, ${summary}`);
+  await p3.click("text=더 보기");
+  await p3.waitForFunction((n) => document.querySelectorAll("main ul li").length > n, saleRows);
+  check("'더 보기' loads the next page", true);
+  await p3.click("main ul li >> nth=0 >> button");
+  await p3.waitForSelector("main ul li dl >> text=거래금액");
+  check("a row expands to show deal details", true);
+  if (shots) await p3.screenshot({ path: `${shots}/task007_sale.png` });
+
+  await p3.click("[role=tab] >> text=전월세");
+  await p3.waitForSelector("main ul li >> text=/보증금|전세/");
+  await p3.click("[aria-label='전용면적 필터'] button >> nth=1");
+  await p3.waitForTimeout(400);
+  const areas = await p3.$$eval("main ul li button span span:nth-child(2)", (els) => els.map((e) => e.textContent.split("㎡")[0]));
+  const chip = (await p3.textContent("[aria-label='전용면적 필터'] button[aria-pressed=true]")).replace("㎡", "");
+  check("area chip filters rent rows", areas.length > 0 && areas.every((a) => Math.floor(Number(a)) === Number(chip)), `${chip}㎡: ${areas.slice(0, 5).join(", ")}`);
+  await p3.click("[aria-label='전용면적 필터'] button >> nth=0");
+  await p3.selectOption("select[aria-label='정렬']", "price_desc");
+  await p3.waitForTimeout(400);
+  const sorted = await p3.evaluate(() => performance.getEntriesByType("resource").some((e) => e.name.includes("type=rent") && e.name.includes("sort=price_desc")));
+  const deposits = await p3.$$eval("main ul li button > span > span:first-child", (els) => els.map((e) => e.textContent));
+  // Ordering itself is asserted in tests/transactions.db.test.ts; here we check the UI requests it.
+  check("price sort is requested and rendered", sorted && deposits.length > 1, deposits.slice(0, 3).join(" / "));
+  if (shots) await p3.screenshot({ path: `${shots}/task007_rent.png` });
+  check("no page errors on detail", p3errors.length === 0, p3errors.join("; "));
+
+  // Empty result is a normal state, distinct from an outage.
+  const pgmod = require("pg");
+  const db = new pgmod.Pool({ connectionString: process.env.DATABASE_URL });
+  const emptyId = (await db.query("SELECT apartment_id FROM apartments a WHERE NOT EXISTS (SELECT 1 FROM transactions t WHERE t.apartment_id = a.apartment_id) LIMIT 1")).rows[0].apartment_id;
+  await db.end();
+  await p3.goto(`http://localhost:5179/#/apartments/${emptyId}`);
+  await p3.waitForSelector("text=확인된 매매 거래가 없습니다");
+  check("apartment without deals shows a normal empty state", (await p3.$("text=불러올 수 없습니다")) === null);
+
+  await p3.route("**/api/apartments/*/transactions*", (r) => r.fulfill({ status: 503, body: "{}" }));
+  await p3.reload();
+  await p3.waitForSelector("text=거래 정보를 불러올 수 없습니다");
+  await p3.unroute("**/api/apartments/*/transactions*");
+  await p3.click("text=다시 시도");
+  await p3.waitForSelector("text=확인된 매매 거래가 없습니다");
+  check("outage shows an error with working retry", true);
   await browser.close();
 } catch (e) {
   console.error(e);

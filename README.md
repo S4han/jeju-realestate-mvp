@@ -74,3 +74,10 @@ npm run match   # DB에 있는 데이터로 매칭 전체를 재계산(네트워
 - 지도: 카카오맵 JS SDK(`VITE_KAKAO_MAP_JS_KEY`, PAW_MAP 앱 키 공유). 키가 없거나 SDK 로드에 실패하거나 8초 안에 응답이 없으면 목록 검색으로 자동 전환한다.
 - 마커: `VERIFIED_PARCEL` 단지만, 현재 지도 범위만(이동·확대 후 300ms 디바운스로 재조회). 클러스터러로 밀집을 처리한다.
 - `npm run test:e2e`: 가짜 SDK로 지도·마커·검색·요약 카드 흐름과, SDK 차단 시 목록 대체를 390px 폭에서 검증한다(개발 DB 데이터 필요).
+
+## 거래 상세 (TASK-007)
+
+- API: `GET /api/apartments/{id}/transactions?type=sale|rent&from=YYYY-MM&to=YYYY-MM&sort=&page=&page_size=&area_min=&area_max=`, `GET /api/transactions/{id}`
+- 확정 매칭(`apartment_id` 설정)이면서 `ACTIVE`인 거래만 노출한다. 해제·원천에서 사라진 거래·미매칭 거래는 목록과 단건 조회 모두에서 숨긴다(단건은 404).
+- 응답의 `data.missing_months`(수집 실패한 달)와 `data.delayed`(36시간 넘게 갱신되지 않음)로 "거래 없음"과 "누락·지연"을 구분해 안내한다.
+- 전월세 가격 정렬은 보증금 기준이다(같으면 월세). 전세와 월세를 하나의 금액으로 환산하지 않는다.

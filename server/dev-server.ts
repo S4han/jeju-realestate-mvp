@@ -10,7 +10,9 @@ const routes: Route[] = [
   { pattern: /^\/api\/system\/data-status$/, load: () => import("../api/system/data-status") },
   { pattern: /^\/api\/apartments\/search$/, load: () => import("../api/apartments/search") },
   { pattern: /^\/api\/apartments\/map$/, load: () => import("../api/apartments/map") },
-  { pattern: /^\/api\/apartments\/(?<id>[^/]+)$/, load: () => import("../api/apartments/[id]") },
+  { pattern: /^\/api\/apartments\/(?<id>[^/]+)$/, load: () => import("../api/apartments/[id]/index") },
+  { pattern: /^\/api\/apartments\/(?<id>[^/]+)\/transactions$/, load: () => import("../api/apartments/[id]/transactions") },
+  { pattern: /^\/api\/transactions\/(?<id>[^/]+)$/, load: () => import("../api/transactions/[id]") },
 ];
 
 const config = loadServerConfig();

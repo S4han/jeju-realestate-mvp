@@ -4,6 +4,7 @@ import { ListSearch } from "./components/ListSearch";
 import { MapView } from "./components/MapView";
 import { SearchBox } from "./components/SearchBox";
 import { SummaryCard } from "./components/SummaryCard";
+import { TransactionsPage } from "./components/TransactionsPage";
 import { describeStatus, fetchDataStatus, type DataStatusState } from "./dataStatus";
 
 const KAKAO_KEY = import.meta.env.VITE_KAKAO_MAP_JS_KEY as string | undefined;
@@ -42,14 +43,8 @@ export default function App() {
     if (item.lat !== null && item.lng !== null) setFocus({ lat: item.lat, lng: item.lng, seq: Date.now() });
   }, []);
 
-  if (detailId) {
-    return (
-      <div className="min-h-dvh bg-slate-50 p-4 text-slate-900">
-        <a href="#/" className="text-sm text-sky-700">← 지도로 돌아가기</a>
-        <p className="mt-4 rounded-lg border border-slate-200 bg-white p-4 text-sm">거래 상세 화면은 다음 단계(TASK-007)에서 제공됩니다.</p>
-      </div>
-    );
-  }
+  // key: filters and pages reset when moving to another apartment.
+  if (detailId) return <TransactionsPage key={detailId} id={detailId} />;
 
   return (
     <div className="flex h-dvh flex-col bg-slate-50 text-slate-900">
