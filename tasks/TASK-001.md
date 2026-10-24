@@ -1,6 +1,6 @@
 # TASK-001 외부 API 및 무료 운영 검증
 
-상태: 사전 검토 완료(docs/TASK-001_REVIEW.md) · 실제 API 호출 승인 대기
+상태: 진행 중 · R-001·R-002 1차 검증 완료(docs/API_VERIFICATION.md) · EXT-003~006·DB·호스팅 미검증
 
 ## 목적
 R-001/R-002 제주 실제 응답, 한국부동산원·K-APT, 카카오맵 SDK, 무료 DB·호스팅 이용조건과 과금 차단 검증
