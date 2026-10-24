@@ -97,3 +97,62 @@ describe("cron endpoint access", () => {
     }
   });
 });
+
+describe("misconfigured deployment", () => {
+  const SECRET_URL = "postgres://app:very-secret-pw@db.example.invalid:6543/postgres";
+  const routes = [
+    "../api/system/data-status",
+    "../api/apartments/search",
+    "../api/apartments/map",
+    "../api/apartments/[id]/index",
+    "../api/apartments/[id]/transactions",
+    "../api/transactions/[id]",
+  ];
+
+  it("answers 503 instead of crashing and logs variable names only", async () => {
+    vi.stubEnv("DATABASE_URL", SECRET_URL);
+    vi.stubEnv("DATABASE_SSL", "");
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      for (const route of routes) {
+        const { default: handler } = await import(route);
+        const t = fakeReqRes();
+        (t.req as any).query = { id: "1", q: "한라" };
+        await handler(t.req as any, t.res);
+        expect(t.res.statusCode, route).toBe(503);
+        expect(t.body()).toContain("DB_UNAVAILABLE");
+        expect(t.body()).not.toContain("secret");
+      }
+      expect(logged).toHaveBeenCalled();
+      for (const [msg] of logged.mock.calls) {
+        expect(String(msg)).toContain("DATABASE_SSL");
+        expect(String(msg)).not.toContain("very-secret-pw");
+      }
+    } finally {
+      logged.mockRestore();
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("cron with a valid secret but no service key stops before any collection", async () => {
+    const collect = vi.fn();
+    vi.doMock("../server/collect/collector", () => ({ collect }));
+    vi.stubEnv("CRON_SECRET", "correct-horse-battery-staple");
+    vi.stubEnv("DATABASE_URL", SECRET_URL);
+    vi.stubEnv("DATA_GO_KR_SERVICE_KEY", "");
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const { default: handler } = await import("../api/cron/collect-transactions");
+      const t = fakeReqRes({ authorization: "Bearer correct-horse-battery-staple" });
+      await handler(t.req as any, t.res);
+      expect(t.res.statusCode).toBe(503);
+      expect(t.body()).toContain("COLLECTOR_MISCONFIGURED");
+      expect(collect).not.toHaveBeenCalled();
+      expect(String(logged.mock.calls[0]?.[0])).toContain("DATA_GO_KR_SERVICE_KEY");
+    } finally {
+      logged.mockRestore();
+      vi.unstubAllEnvs();
+      vi.doUnmock("../server/collect/collector");
+    }
+  });
+});

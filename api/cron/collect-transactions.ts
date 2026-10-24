@@ -1,12 +1,13 @@
 // Daily incremental collection, triggered by Vercel Cron (Hobby: once per day).
 // Vercel sends "Authorization: Bearer $CRON_SECRET"; anything else is rejected.
-import { loadCollectorConfig } from "../../server/config.js";
+import type pg from "pg";
+import { ConfigError, loadCollectorConfig, type CollectorConfig } from "../../server/config.js";
 import { getPool } from "../../server/db.js";
 import { createBudget } from "../../server/collect/budget.js";
 import { collect } from "../../server/collect/collector.js";
 import { recentMonths } from "../../server/collect/months.js";
 import { runMatching } from "../../server/match/run.js";
-import { sendJson, type ApiRequest, type ApiResponse } from "../../server/http.js";
+import { sendJson, serviceUnavailable, type ApiRequest, type ApiResponse } from "../../server/http.js";
 
 const MAX_CALLS_PER_RUN = 30;
 
@@ -16,8 +17,18 @@ export default async function handler(req: ApiRequest, res: ApiResponse): Promis
     sendJson(res, { status: 401, body: { error: { code: "UNAUTHORIZED" } } });
     return;
   }
-  const config = loadCollectorConfig();
-  const pool = getPool();
+  let config: CollectorConfig;
+  let pool: pg.Pool;
+  try {
+    config = loadCollectorConfig();
+    pool = getPool();
+  } catch (err) {
+    if (!(err instanceof ConfigError)) throw err;
+    // Variable names only; no external call is made with a broken configuration.
+    console.error(err.message);
+    sendJson(res, serviceUnavailable("COLLECTOR_MISCONFIGURED"));
+    return;
+  }
   const budget = createBudget(pool, { dailyLimit: config.API_DAILY_CALL_LIMIT, runLimit: MAX_CALLS_PER_RUN });
   const { jobs, stoppedBy } = await collect(pool, { months: recentMonths(4), serviceKey: config.DATA_GO_KR_SERVICE_KEY, budget });
   // Matching is local (no external calls) and re-derives links for new or changed rows.
