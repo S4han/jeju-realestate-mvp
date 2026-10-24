@@ -5,7 +5,7 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
 
-const env = { ...process.env, API_PORT: "3011", DATABASE_URL: "postgres://nobody:nopass@127.0.0.1:1/none" };
+const env = { ...process.env, API_PORT: "3011", DATABASE_URL: "postgres://nobody:PASSWORD@127.0.0.1:1/none" };
 const procs = [
   spawn("node", ["--import", "tsx", "server/dev-server.ts"], { stdio: "ignore", detached: true, env }),
   spawn("npx", ["vite", "--port", "5180", "--strictPort"], { stdio: "ignore", detached: true, env: { ...env, VITE_KAKAO_MAP_JS_KEY: "" } }),
@@ -25,9 +25,12 @@ try {
   page.on("pageerror", (e) => errors.push(e.message));
   const apiRes = await fetch("http://localhost:3011/api/apartments/search?q=a");
   const apiBody = await apiRes.text();
-  check("API answers 503 with a generic message when the DB is down", apiRes.status === 503 && !/127\.0\.0\.1|ECONNREFUSED|nopass/.test(apiBody), `${apiRes.status} ${apiBody}`);
+  check("API answers 503 with a generic message when the DB is down", apiRes.status === 503 && !/127\.0\.0\.1|ECONNREFUSED|PASSWORD/.test(apiBody), `${apiRes.status} ${apiBody}`);
 
   await page.goto("http://localhost:5180/");
+  await page.waitForSelector("text=순위를 불러올 수 없습니다");
+  check("dashboard shows an error with retry during the outage", (await page.$("text=다시 시도")) !== null);
+  await page.goto("http://localhost:5180/#/map");
   await page.waitForSelector("text=데이터 서버에 연결할 수 없습니다");
   check("header shows outage, not 'no data'", (await page.$("text=아직 수집된 데이터가 없습니다")) === null);
   await page.waitForSelector("[role=alert] >> text=목록 검색으로 전환");

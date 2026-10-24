@@ -83,3 +83,25 @@ export function fetchTransactions(
   }
   return getJson<TransactionList>(`/api/apartments/${encodeURIComponent(id)}/transactions?${qs}`, signal);
 }
+
+export type TopApartment = {
+  rank: number;
+  id: string;
+  name: string;
+  road_address: string | null;
+  lot_address: string | null;
+  sale_count: number;
+  deal: { contract_date: string; area_m2: number; floor: number | null; sale_price: number; price_per_pyeong: number };
+};
+
+export type TopApartments = {
+  from: string;
+  top_n: number;
+  by_price: Record<CityCode, TopApartment[]>;
+  by_per_pyeong: Record<CityCode, TopApartment[]>;
+  source: string;
+};
+
+export function fetchTopApartments(signal?: AbortSignal) {
+  return getJson<TopApartments>("/api/dashboard/top-apartments", signal);
+}

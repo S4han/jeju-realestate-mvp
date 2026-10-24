@@ -47,7 +47,7 @@ try {
   const mapRequests = [];
   page.on("request", (r) => r.url().includes("/api/apartments/map") && mapRequests.push(new URL(r.url()).searchParams));
   await page.route("https://dapi.kakao.com/**", (r) => r.fulfill({ contentType: "application/javascript", body: fakeSdk }));
-  await page.goto("http://localhost:5179/");
+  await page.goto("http://localhost:5179/#/map");
   await page.waitForSelector("[data-marker]");
   const count = Number(await page.getAttribute("[data-markers]", "data-count"));
   check("markers load for the visible bounds", count > 0 && mapRequests[0]?.get("bbox")?.split(",").length === 4, `${count} markers, bbox=${mapRequests[0]?.get("bbox")}`);
@@ -82,10 +82,37 @@ try {
   check("no page errors", errors.length === 0, errors.join("; "));
   await page.close();
 
+  // 1b) Dashboard is the first screen (TASK-010)
+  const pd = await browser.newPage(ctx);
+  const pdErrors = [];
+  pd.on("pageerror", (e) => pdErrors.push(e.message));
+  await pd.goto("http://localhost:5179/");
+  await pd.waitForSelector("section[aria-label^='제주시'] ol li");
+  const rows = async () => ({
+    jeju: await pd.$$eval("section[aria-label^='제주시'] ol li", (els) => els.length),
+    sgp: await pd.$$eval("section[aria-label^='서귀포시'] ol li", (els) => els.length),
+  });
+  const byPrice = await rows();
+  check("dashboard lists top 5 per city by sale price", byPrice.jeju === 5 && byPrice.sgp === 5, JSON.stringify(byPrice));
+  const firstPrice = await pd.textContent("section[aria-label^='제주시'] ol li >> nth=0");
+  await pd.click("button[role=tab] >> text=평당가");
+  await pd.waitForSelector("section[aria-label='제주시 평당가 순위'] ol li");
+  const firstPyeong = await pd.textContent("section[aria-label^='제주시'] ol li >> nth=0");
+  check("per-pyeong tab shows per-pyeong figures", /평당/.test(firstPyeong ?? "") && firstPyeong !== firstPrice);
+  if (shots) await pd.screenshot({ path: `${shots}/task010_dashboard.png`, fullPage: true });
+  await pd.click("section[aria-label^='제주시'] ol li a >> nth=0");
+  await pd.waitForSelector("main ul li");
+  check("ranking row opens the transaction detail", /#\/apartments\/\d+$/.test(pd.url()));
+  await pd.click("text=← 돌아가기");
+  await pd.waitForSelector("section[aria-label^='제주시'] ol li");
+  check("back returns to the dashboard", true);
+  check("dashboard has no page errors or horizontal overflow", pdErrors.length === 0 && !(await pd.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)), pdErrors.join("; "));
+  await pd.close();
+
   // 2) Map SDK blocked → list search fallback
   const p2 = await browser.newPage(ctx);
   await p2.route("https://dapi.kakao.com/**", (r) => r.abort());
-  await p2.goto("http://localhost:5179/");
+  await p2.goto("http://localhost:5179/#/map");
   await p2.waitForSelector("[role=alert] >> text=목록 검색으로 전환");
   await p2.fill("#list-q", "아라");
   await p2.waitForSelector("main li button");
@@ -102,7 +129,7 @@ try {
   const p3errors = [];
   p3.on("pageerror", (e) => p3errors.push(e.message));
   await p3.route("https://dapi.kakao.com/**", (r) => r.fulfill({ contentType: "application/javascript", body: fakeSdk }));
-  await p3.goto("http://localhost:5179/");
+  await p3.goto("http://localhost:5179/#/map");
   await p3.fill("input[role=combobox]", "노형뜨란채");
   await p3.click("li[role=option] >> text=노형뜨란채");
   await p3.click("text=거래 상세보기");

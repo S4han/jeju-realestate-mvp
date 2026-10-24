@@ -8,6 +8,7 @@ type Route = { pattern: RegExp; load: () => Promise<{ default: Handler }> };
 // Order matters: static paths before the dynamic [id] route (same precedence as Vercel).
 const routes: Route[] = [
   { pattern: /^\/api\/system\/data-status$/, load: () => import("../api/system/data-status.js") },
+  { pattern: /^\/api\/dashboard\/top-apartments$/, load: () => import("../api/dashboard/top-apartments.js") },
   { pattern: /^\/api\/apartments\/search$/, load: () => import("../api/apartments/search.js") },
   { pattern: /^\/api\/apartments\/map$/, load: () => import("../api/apartments/map.js") },
   { pattern: /^\/api\/apartments\/(?<id>[^/]+)$/, load: () => import("../api/apartments/[id]/index.js") },

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { ApartmentListItem, CityCode } from "./api";
+import { Dashboard } from "./components/Dashboard";
 import { ListSearch } from "./components/ListSearch";
 import { MapView } from "./components/MapView";
 import { SearchBox } from "./components/SearchBox";
@@ -8,6 +9,10 @@ import { TransactionsPage } from "./components/TransactionsPage";
 import { describeStatus, fetchDataStatus, type DataStatusState } from "./dataStatus";
 
 const KAKAO_KEY = import.meta.env.VITE_KAKAO_MAP_JS_KEY as string | undefined;
+
+type View = "dashboard" | "map" | "list";
+const VIEW_LABEL: Record<View, string> = { dashboard: "대시보드", map: "지도", list: "목록" };
+const VIEW_HASH: Record<View, string> = { dashboard: "#/", map: "#/map", list: "#/list" };
 
 function useHash() {
   const [hash, setHash] = useState(window.location.hash);
@@ -22,21 +27,20 @@ function useHash() {
 export default function App() {
   const [status, setStatus] = useState<DataStatusState>({ kind: "loading" });
   const [city, setCity] = useState<CityCode | "">("");
-  const [mode, setMode] = useState<"map" | "list">("map");
   const [mapFailed, setMapFailed] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [focus, setFocus] = useState<{ lat: number; lng: number; seq: number } | null>(null);
   const hash = useHash();
   const detailId = /^#\/apartments\/(\d+)$/.exec(hash)?.[1];
+  // Views live in the URL hash so each one can be linked: #/ dashboard (first screen), #/map, #/list.
+  const view: View = hash === "#/map" ? "map" : hash === "#/list" ? "list" : "dashboard";
+  const mode = view === "map" && mapFailed ? "list" : view;
 
   useEffect(() => {
     void fetchDataStatus().then(setStatus);
   }, []);
 
-  const onUnavailable = useCallback(() => {
-    setMapFailed(true);
-    setMode("list");
-  }, []);
+  const onUnavailable = useCallback(() => setMapFailed(true), []);
   const onSelectId = useCallback((id: string) => setSelected(id), []);
   const onPick = useCallback((item: ApartmentListItem) => {
     setSelected(item.id);
@@ -51,23 +55,23 @@ export default function App() {
       <header className="z-20 border-b border-slate-200 bg-white px-4 pb-3 pt-2">
         <div className="mx-auto flex max-w-2xl items-center gap-2">
           <h1 className="shrink-0 text-base font-semibold">제주 아파트 실거래</h1>
-          <span className="rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-800">개발 중</span>
-          <div className="ml-auto flex gap-1 text-xs" role="group" aria-label="보기 방식">
-            {(["map", "list"] as const).map((m) => (
+          <span className="shrink-0 whitespace-nowrap rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-800">개발 중</span>
+          <div className="ml-auto flex shrink-0 gap-1 text-xs" role="group" aria-label="보기 방식">
+            {(Object.keys(VIEW_LABEL) as View[]).map((m) => (
               <button
                 key={m}
                 type="button"
                 disabled={m === "map" && mapFailed}
                 aria-pressed={mode === m}
-                onClick={() => setMode(m)}
-                className={`rounded-md border px-2 py-1 ${mode === m ? "border-sky-700 bg-sky-700 text-white" : "border-slate-300 bg-white"} disabled:opacity-40`}
+                onClick={() => (window.location.hash = VIEW_HASH[m])}
+                className={`whitespace-nowrap rounded-md border px-2 py-1 ${mode === m ? "border-sky-700 bg-sky-700 text-white" : "border-slate-300 bg-white"} disabled:opacity-40`}
               >
-                {m === "map" ? "지도" : "목록"}
+                {VIEW_LABEL[m]}
               </button>
             ))}
           </div>
         </div>
-        <div className="mx-auto mt-2 flex max-w-2xl gap-2">
+        <div className={`mx-auto mt-2 flex max-w-2xl gap-2 ${mode === "dashboard" ? "hidden" : ""}`}>
           <select
             aria-label="지역 선택"
             value={city}
@@ -90,7 +94,11 @@ export default function App() {
         </div>
       )}
       <main className="relative min-h-0 flex-1">
-        {mode === "map" ? (
+        {mode === "dashboard" ? (
+          <div className="h-full overflow-auto">
+            <Dashboard />
+          </div>
+        ) : mode === "map" ? (
           <MapView appKey={KAKAO_KEY} city={city} focus={focus} onSelect={onSelectId} onUnavailable={onUnavailable} />
         ) : (
           <div className="mx-auto h-full max-w-2xl overflow-auto pb-64">

@@ -99,7 +99,7 @@ describe("cron endpoint access", () => {
 });
 
 describe("misconfigured deployment", () => {
-  const SECRET_URL = "postgres://app:very-secret-pw@db.example.invalid:6543/postgres";
+  const SECRET_URL = "postgres://app:SECRETPW@db.example.invalid:6543/postgres";
   const routes = [
     "../api/system/data-status",
     "../api/apartments/search",
@@ -107,6 +107,7 @@ describe("misconfigured deployment", () => {
     "../api/apartments/[id]/index",
     "../api/apartments/[id]/transactions",
     "../api/transactions/[id]",
+    "../api/dashboard/top-apartments",
   ];
 
   it("answers 503 instead of crashing and logs variable names only", async () => {
@@ -126,7 +127,7 @@ describe("misconfigured deployment", () => {
       expect(logged).toHaveBeenCalled();
       for (const [msg] of logged.mock.calls) {
         expect(String(msg)).toContain("DATABASE_SSL");
-        expect(String(msg)).not.toContain("very-secret-pw");
+        expect(String(msg)).not.toContain("SECRETPW");
       }
     } finally {
       logged.mockRestore();

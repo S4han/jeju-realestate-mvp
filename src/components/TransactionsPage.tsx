@@ -56,8 +56,18 @@ export function TransactionsPage({ id }: { id: string }) {
     <div className="min-h-dvh bg-slate-50 pb-10 text-slate-900">
       <header className="sticky top-0 z-20 border-b border-slate-200 bg-white px-4 py-3">
         <div className="mx-auto max-w-2xl">
-          <a href="#/" className="text-sm text-sky-700">
-            ← 지도로 돌아가기
+          <a
+            href="#/"
+            onClick={(e) => {
+              // Back to wherever the user came from (dashboard, map or list); "#/" when opened directly.
+              if (window.history.length > 1) {
+                e.preventDefault();
+                window.history.back();
+              }
+            }}
+            className="text-sm text-sky-700"
+          >
+            ← 돌아가기
           </a>
           <h1 className="mt-1 text-lg font-semibold">{apt?.name ?? first?.apartment.name ?? "불러오는 중…"}</h1>
           {apt && (
