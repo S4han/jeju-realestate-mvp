@@ -42,6 +42,8 @@
   - 결함 1: 확장자 없는 상대 import → Vercel 네이티브 ESM에서 `ERR_MODULE_NOT_FOUND`(모든 API 500). `6a690a8`에서 `.js` 확장자 추가 + `tests/esmImports.test.ts`
   - 결함 2: `DATABASE_SSL` 값이 대시보드 편집 중 빈 값이 됨 → ConfigError로 함수 중단. `require`로 복구. → `b343bbd`에서 설정 오류 시 함수 중단 대신 503(`DB_UNAVAILABLE`, Cron은 `COLLECTOR_MISCONFIGURED`) + 로그에 변수 이름만 남기도록 개선, Preview `dpl_Ao8Hy…`에서 정상 응답 회귀 확인
   - Preview `dpl_ETVA1…`에서 확인: data-status·검색·상세·거래 API 200(Supabase 6543 경유), 함수 리전 icn1, 보안 헤더 5종 + HSTS + `x-robots-tag: noindex`
+  - 카카오 지도(사용자 브라우저, Preview 브랜치 도메인 등록 후): 실제 지도 표시, 클러스터 합계 1,090 = VERIFIED_PARCEL 단지 수(1,153 − 위치 미확인 63)와 일치
+  - 카카오 쿼터(PAW_MAP 공유): 월 3,000,000 / 이번 달 4,371 사용(0%). **한도 초과 시 차단·과금 여부와 비즈월렛 연결 여부는 미확인**
   - 컨테이너에서 `*.vercel.app`·`<ref>.supabase.co`는 네트워크 정책으로 차단 → 배포 점검은 Vercel MCP(`web_fetch_vercel_url`, 23시간 공유 링크 생성)로 함
 6. **다음 차례** Vercel(Hobby): 프로젝트 생성·GitHub 연결, 환경변수(`DATABASE_URL`=Supabase pooler, `DATABASE_SSL=require`, `DATA_GO_KR_SERVICE_KEY`, `CRON_SECRET`, `VITE_KAKAO_MAP_JS_KEY`), 리전 icn1 허용 여부, Cron 1회 실행, 보안 헤더 확인
 7. 카카오: PAW_MAP 앱 Web 플랫폼에 배포 도메인 등록, 실제 지도 확인, 쿼터 화면 확인
