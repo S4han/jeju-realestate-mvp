@@ -1,4 +1,4 @@
-import type { NormalizedTx } from "./normalize";
+import type { NormalizedTx } from "./normalize.js";
 
 export type ExistingTx = {
   id: string;

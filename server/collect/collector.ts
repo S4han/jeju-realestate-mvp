@@ -1,9 +1,9 @@
 import type pg from "pg";
-import { redact } from "../config";
-import { BudgetExceededError, type Budget } from "./budget";
-import { fetchMonth, SourceError, type Fetcher, type SourceId } from "./molit";
-import { normalizeItem, type NormalizedTx } from "./normalize";
-import { applyMonth, type ApplySummary } from "./store";
+import { redact } from "../config.js";
+import { BudgetExceededError, type Budget } from "./budget.js";
+import { fetchMonth, SourceError, type Fetcher, type SourceId } from "./molit.js";
+import { normalizeItem, type NormalizedTx } from "./normalize.js";
+import { applyMonth, type ApplySummary } from "./store.js";
 
 export const CITY_CODES = ["50110", "50130"] as const;
 

@@ -1,6 +1,6 @@
 import * as shapefile from "shapefile";
-import type { Parcel } from "./location";
-import type { PolygonCoords } from "./geometry";
+import type { Parcel } from "./location.js";
+import type { PolygonCoords } from "./geometry.js";
 
 // Reads the continuous cadastral SHP (A1 = PNU, A5 = 지번+지목) and returns only the wanted parcels.
 // The DBF is CP949 even though the bundled .cpg says UTF-8 (verified in TASK-001).

@@ -1,4 +1,4 @@
-import type { RawItem, SourceId } from "./molit";
+import type { RawItem, SourceId } from "./molit.js";
 
 export type NormalizedTx = {
   tradeType: "sale" | "rent";

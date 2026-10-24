@@ -1,5 +1,5 @@
 import pg from "pg";
-import { loadServerConfig } from "./config";
+import { loadServerConfig } from "./config.js";
 
 let pool: pg.Pool | undefined;
 

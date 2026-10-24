@@ -1,18 +1,18 @@
 // Local stand-in for Vercel's API routing: maps /api/<path> to api/<path>.ts.
 import { createServer } from "node:http";
-import { loadServerConfig } from "./config";
-import { sendJson, type ApiRequest, type ApiResponse } from "./http";
+import { loadServerConfig } from "./config.js";
+import { sendJson, type ApiRequest, type ApiResponse } from "./http.js";
 
 type Handler = (req: ApiRequest, res: ApiResponse) => Promise<void>;
 type Route = { pattern: RegExp; load: () => Promise<{ default: Handler }> };
 // Order matters: static paths before the dynamic [id] route (same precedence as Vercel).
 const routes: Route[] = [
-  { pattern: /^\/api\/system\/data-status$/, load: () => import("../api/system/data-status") },
-  { pattern: /^\/api\/apartments\/search$/, load: () => import("../api/apartments/search") },
-  { pattern: /^\/api\/apartments\/map$/, load: () => import("../api/apartments/map") },
-  { pattern: /^\/api\/apartments\/(?<id>[^/]+)$/, load: () => import("../api/apartments/[id]/index") },
-  { pattern: /^\/api\/apartments\/(?<id>[^/]+)\/transactions$/, load: () => import("../api/apartments/[id]/transactions") },
-  { pattern: /^\/api\/transactions\/(?<id>[^/]+)$/, load: () => import("../api/transactions/[id]") },
+  { pattern: /^\/api\/system\/data-status$/, load: () => import("../api/system/data-status.js") },
+  { pattern: /^\/api\/apartments\/search$/, load: () => import("../api/apartments/search.js") },
+  { pattern: /^\/api\/apartments\/map$/, load: () => import("../api/apartments/map.js") },
+  { pattern: /^\/api\/apartments\/(?<id>[^/]+)$/, load: () => import("../api/apartments/[id]/index.js") },
+  { pattern: /^\/api\/apartments\/(?<id>[^/]+)\/transactions$/, load: () => import("../api/apartments/[id]/transactions.js") },
+  { pattern: /^\/api\/transactions\/(?<id>[^/]+)$/, load: () => import("../api/transactions/[id].js") },
 ];
 
 const config = loadServerConfig();

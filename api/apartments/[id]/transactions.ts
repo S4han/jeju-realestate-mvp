@@ -1,6 +1,6 @@
-import { getPool } from "../../../server/db";
-import { listTransactions } from "../../../server/handlers/transactions";
-import { sendJson, type ApiRequest, type ApiResponse } from "../../../server/http";
+import { getPool } from "../../../server/db.js";
+import { listTransactions } from "../../../server/handlers/transactions.js";
+import { sendJson, type ApiRequest, type ApiResponse } from "../../../server/http.js";
 
 export default async function handler(req: ApiRequest, res: ApiResponse): Promise<void> {
   const { id, ...query } = req.query ?? {};

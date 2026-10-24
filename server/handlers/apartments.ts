@@ -1,7 +1,7 @@
 import type pg from "pg";
 import { z } from "zod";
-import { recentMonths } from "../collect/months";
-import { serviceUnavailable, type HandlerResult } from "../http";
+import { recentMonths } from "../collect/months.js";
+import { serviceUnavailable, type HandlerResult } from "../http.js";
 
 type Query = Record<string, string | string[] | undefined>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);

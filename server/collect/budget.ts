@@ -1,5 +1,5 @@
 import type pg from "pg";
-import { todayKst } from "./months";
+import { todayKst } from "./months.js";
 
 export class BudgetExceededError extends Error {
   constructor(public readonly scope: "DAILY" | "RUN", sourceId: string) {

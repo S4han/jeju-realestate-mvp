@@ -1,6 +1,6 @@
 import type pg from "pg";
-import type { NormalizedTx } from "./normalize";
-import { reconcileGroup, type ExistingTx } from "./reconcile";
+import type { NormalizedTx } from "./normalize.js";
+import { reconcileGroup, type ExistingTx } from "./reconcile.js";
 
 export type ApplySummary = { inserted: number; updated: number; cancelled: number; missing: number };
 

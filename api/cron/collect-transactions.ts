@@ -1,12 +1,12 @@
 // Daily incremental collection, triggered by Vercel Cron (Hobby: once per day).
 // Vercel sends "Authorization: Bearer $CRON_SECRET"; anything else is rejected.
-import { loadCollectorConfig } from "../../server/config";
-import { getPool } from "../../server/db";
-import { createBudget } from "../../server/collect/budget";
-import { collect } from "../../server/collect/collector";
-import { recentMonths } from "../../server/collect/months";
-import { runMatching } from "../../server/match/run";
-import { sendJson, type ApiRequest, type ApiResponse } from "../../server/http";
+import { loadCollectorConfig } from "../../server/config.js";
+import { getPool } from "../../server/db.js";
+import { createBudget } from "../../server/collect/budget.js";
+import { collect } from "../../server/collect/collector.js";
+import { recentMonths } from "../../server/collect/months.js";
+import { runMatching } from "../../server/match/run.js";
+import { sendJson, type ApiRequest, type ApiResponse } from "../../server/http.js";
 
 const MAX_CALLS_PER_RUN = 30;
 

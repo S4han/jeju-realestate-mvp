@@ -1,6 +1,6 @@
 import type pg from "pg";
-import { recentMonths } from "../collect/months";
-import { serviceUnavailable, type HandlerResult } from "../http";
+import { recentMonths } from "../collect/months.js";
+import { serviceUnavailable, type HandlerResult } from "../http.js";
 
 type SourceStatus = {
   source_id: string;

@@ -1,6 +1,6 @@
 import type pg from "pg";
-import type { ApartmentInput } from "./reb";
-import { assessLocation, type Parcel } from "./location";
+import type { ApartmentInput } from "./reb.js";
+import { assessLocation, type Parcel } from "./location.js";
 
 export type ImportOptions = { rebAsOf: string; cadastralVersion: string; now?: Date };
 export type ImportSummary = {

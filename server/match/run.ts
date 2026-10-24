@@ -1,5 +1,5 @@
 import type pg from "pg";
-import { matchAll, type ApartmentLite, type TxLite } from "./engine";
+import { matchAll, type ApartmentLite, type TxLite } from "./engine.js";
 
 export type MatchSummary = {
   transactions: number;

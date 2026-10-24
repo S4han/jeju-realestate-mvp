@@ -1,4 +1,4 @@
-import { areaAndCentroid, containsPoint, epsg5186ToWgs84, representativePoint, type PolygonCoords } from "./geometry";
+import { areaAndCentroid, containsPoint, epsg5186ToWgs84, representativePoint, type PolygonCoords } from "./geometry.js";
 
 export type Parcel = { pnu: string; jimok: string; polygons: PolygonCoords[] };
 
