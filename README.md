@@ -13,7 +13,7 @@
 
 ## 로컬 개발 (TASK-002)
 
-요구사항: Node 20+, PostgreSQL 16
+요구사항: Node 22 (Vercel 런타임과 같게 `engines`로 고정), PostgreSQL 16
 
 ```bash
 npm install
