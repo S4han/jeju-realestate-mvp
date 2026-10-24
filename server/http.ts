@@ -8,6 +8,7 @@ export type HandlerResult = { status: number; body: unknown; cacheSeconds?: numb
 export function sendJson(res: ApiResponse, result: HandlerResult): void {
   res.statusCode = result.status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader(
     "Cache-Control",
     result.status === 200 && result.cacheSeconds ? `public, s-maxage=${result.cacheSeconds}` : "no-store",

@@ -39,7 +39,13 @@ const toItem = (r: Record<string, any>): ApartmentListItem => ({
 });
 
 const searchSchema = z.object({
-  q: z.string().trim().min(1, "q is required").max(30, "q is too long"),
+  q: z
+    .string()
+    .trim()
+    .min(1, "q is required")
+    .max(30, "q is too long")
+    // Control characters (e.g. NUL, which PostgreSQL rejects) are input errors, not outages.
+    .refine((s) => !/[\u0000-\u001f\u007f]/.test(s), "q contains control characters"),
   city_code: citySchema,
   limit: z.coerce.number().int().min(1).max(20).default(10),
 });

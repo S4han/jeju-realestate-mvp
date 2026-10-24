@@ -18,7 +18,8 @@
     "import:reference": "node --env-file-if-exists=.env --import tsx scripts/import-reference.ts",
     "collect": "NODE_USE_ENV_PROXY=1 node --env-file-if-exists=.env --import tsx scripts/collect-transactions.ts",
     "match": "node --env-file-if-exists=.env --import tsx scripts/match-transactions.ts",
-    "test:e2e": "node --env-file-if-exists=.env tests/e2e/map.e2e.mjs"
+    "test:e2e": "node --env-file-if-exists=.env tests/e2e/map.e2e.mjs",
+    "check:secrets": "node --env-file-if-exists=.env --import tsx scripts/check-secrets.ts"
   },
   "dependencies": {
     "fast-xml-parser": "^5.11.2",
