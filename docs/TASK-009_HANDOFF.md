@@ -40,7 +40,7 @@
   - 환경 변수(Production·Preview): `DATABASE_URL`(Sensitive, 6543), `DATABASE_SSL=require`, `VITE_KAKAO_MAP_JS_KEY`. **`CRON_SECRET`·`DATA_GO_KR_SERVICE_KEY`는 미등록**(Cron은 401로 끝나 실거래 API 미호출) — Cron 실행 승인 시 등록
   - 첫 배포가 프로젝트 첫 배포 규칙으로 Production이 됨(`dpl_7vzR1…`, ESM 결함이 있는 이전 커밋). Production Cron이 등록됐지만 위 이유로 외부 호출 없음
   - 결함 1: 확장자 없는 상대 import → Vercel 네이티브 ESM에서 `ERR_MODULE_NOT_FOUND`(모든 API 500). `6a690a8`에서 `.js` 확장자 추가 + `tests/esmImports.test.ts`
-  - 결함 2: `DATABASE_SSL` 값이 대시보드 편집 중 빈 값이 됨 → ConfigError로 함수 중단. `require`로 복구. (설정 오류 시 503 안내로 바꾸는 개선은 승인 대기)
+  - 결함 2: `DATABASE_SSL` 값이 대시보드 편집 중 빈 값이 됨 → ConfigError로 함수 중단. `require`로 복구. → `b343bbd`에서 설정 오류 시 함수 중단 대신 503(`DB_UNAVAILABLE`, Cron은 `COLLECTOR_MISCONFIGURED`) + 로그에 변수 이름만 남기도록 개선, Preview `dpl_Ao8Hy…`에서 정상 응답 회귀 확인
   - Preview `dpl_ETVA1…`에서 확인: data-status·검색·상세·거래 API 200(Supabase 6543 경유), 함수 리전 icn1, 보안 헤더 5종 + HSTS + `x-robots-tag: noindex`
   - 컨테이너에서 `*.vercel.app`·`<ref>.supabase.co`는 네트워크 정책으로 차단 → 배포 점검은 Vercel MCP(`web_fetch_vercel_url`, 23시간 공유 링크 생성)로 함
 6. **다음 차례** Vercel(Hobby): 프로젝트 생성·GitHub 연결, 환경변수(`DATABASE_URL`=Supabase pooler, `DATABASE_SSL=require`, `DATA_GO_KR_SERVICE_KEY`, `CRON_SECRET`, `VITE_KAKAO_MAP_JS_KEY`), 리전 icn1 허용 여부, Cron 1회 실행, 보안 헤더 확인
