@@ -16,7 +16,8 @@
     "test": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run",
     "check:env-exposure": "tsx scripts/check-env-exposure.ts",
     "import:reference": "node --env-file-if-exists=.env --import tsx scripts/import-reference.ts",
-    "collect": "NODE_USE_ENV_PROXY=1 node --env-file-if-exists=.env --import tsx scripts/collect-transactions.ts"
+    "collect": "NODE_USE_ENV_PROXY=1 node --env-file-if-exists=.env --import tsx scripts/collect-transactions.ts",
+    "match": "node --env-file-if-exists=.env --import tsx scripts/match-transactions.ts"
   },
   "dependencies": {
     "fast-xml-parser": "^5.11.2",

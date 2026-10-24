@@ -5,6 +5,7 @@ import { getPool } from "../../server/db";
 import { createBudget } from "../../server/collect/budget";
 import { collect } from "../../server/collect/collector";
 import { recentMonths } from "../../server/collect/months";
+import { runMatching } from "../../server/match/run";
 import { sendJson, type ApiRequest, type ApiResponse } from "../../server/http";
 
 const MAX_CALLS_PER_RUN = 30;
@@ -19,8 +20,10 @@ export default async function handler(req: ApiRequest, res: ApiResponse): Promis
   const pool = getPool();
   const budget = createBudget(pool, { dailyLimit: config.API_DAILY_CALL_LIMIT, runLimit: MAX_CALLS_PER_RUN });
   const { jobs, stoppedBy } = await collect(pool, { months: recentMonths(4), serviceKey: config.DATA_GO_KR_SERVICE_KEY, budget });
+  // Matching is local (no external calls) and re-derives links for new or changed rows.
+  const matching = await runMatching(pool);
   sendJson(res, {
     status: 200,
-    body: { calls: budget.callsThisRun(), stoppedBy: stoppedBy ?? null, jobs: jobs.map(({ source, city, period, status, errorCode }) => ({ source, city, period, status, errorCode })) },
+    body: { calls: budget.callsThisRun(), stoppedBy: stoppedBy ?? null, matching: { confirmed: matching.confirmed, pending: matching.pending }, jobs: jobs.map(({ source, city, period, status, errorCode }) => ({ source, city, period, status, errorCode })) },
   });
 }

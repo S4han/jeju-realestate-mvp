@@ -54,3 +54,16 @@ npm run collect -- --months 202608,202609 --max-calls 10
 - 해제 거래는 `CANCELLED`로 보존한다. 같은 내용의 행은 `occurrence`로 구분한다. 원천에서 사라진 행은 `MISSING_FROM_SOURCE`로 표시하며 삭제하지 않는다.
 - 운영: `api/cron/collect-transactions.ts`(Vercel Cron, 매일 03:00 KST, `CRON_SECRET` 필요, 1회 최대 30호출)
 - 이 클라우드 환경에서는 `NODE_USE_ENV_PROXY=1`로 프록시를 쓴다(스크립트에 포함).
+
+## 단지·거래 매칭 (TASK-005)
+
+```bash
+npm run match   # DB에 있는 데이터로 매칭 전체를 재계산(네트워크 호출 없음, 멱등)
+```
+
+- 원천 단지(`aptSeq`) 단위로 판정하고, 그 단지의 모든 거래가 판정을 따른다.
+  - 매매가 있는 단지: 매매 상세 API로 만든 PNU가 기준 단지 **하나**에만 맞고, 원천 단지명이 **모두** 기준 단지명(별칭 포함)과 정규화 후 일치하면 확정
+  - 전월세만 있는 단지: 지번주소가 기준 단지 하나와 정확히 일치하고 이름도 일치하면 확정
+- 후보가 없거나 여러 개, 이름 불일치, 한 필지를 원천 단지 여럿이 쓰는 경우, 거래 행의 주소가 단지 주소와 다른 경우는 모두 보류하고 `match_reviews.reason`에 사유를 기록한다. 이름만으로는 연결하지 않는다.
+- 확정된 거래에만 `transactions.apartment_id`가 설정된다. 보류 목록: docs/MATCH_REVIEW.md
+- 매일 수집(Cron) 뒤 자동으로 실행된다.
