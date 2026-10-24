@@ -1,6 +1,6 @@
 # TASK-008 보안·비용·성능·장애 테스트
 
-상태: 완료(사용자 승인 대기) · 2026-10-24 · 결과 docs/ACCEPTANCE_RESULTS.md
+상태: 완료(2026-10-24 사용자 승인) · 결과 docs/ACCEPTANCE_RESULTS.md
 
 ## 목적
 Secret/입력검증, 공급자 과금 차단, 호출 예산, 성능 지표, 데이터 지연·지도 장애 E2E
