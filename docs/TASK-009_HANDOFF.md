@@ -10,13 +10,16 @@
   - 사용자가 환경 변수 `SUPABASE_DATABASE_URL`(비밀번호 포함)을 등록하고, 허용 도메인에 pooler 호스트를 추가함
   - 로컬 개발 DB(`DATABASE_URL`, .env)와 섞이지 않도록 이름을 따로 씀
 
+## 주의
+- 저장소가 **공개(public)**다. 데이터 덤프·원본 응답·지적도 파일은 커밋하지 않는다(재배포 조건 미확인).
+
 ## 다음 단계 (각각 실행 전에 사용자 승인)
 1. 환경 변수 확인(값 출력 금지): 존재 여부, 호스트, 포트 6543, 비밀번호 자리표시자 제거 여부
 2. 연결 확인: `SELECT version()` (SSL 필요, `DATABASE_SSL=require`)
 3. 마이그레이션: `DATABASE_URL="$SUPABASE_DATABASE_URL" DATABASE_SSL=require node --import tsx scripts/migrate.ts` → 0001~0004
 4. 데이터 이전: 로컬 DB가 있으면 `SOURCE_DATABASE_URL=<로컬> TARGET_DATABASE_URL="$SUPABASE_DATABASE_URL" scripts/copy-to-remote.sh`(건수 대조)
    - 새 컨테이너에는 로컬 DB 데이터가 없다. **1순위: 데이터 백업 파일 복원**(API 재호출 없음)
-     - 파일: `jeju_data_20261024.dump`(pg_dump custom 형식, 데이터만, 487KB, 7개 테이블: 단지 1,153 / 거래 7,068 / 확정 매칭 6,920). 사용자 승인 시 사용자 구글 드라이브에 업로드
+     - 파일: `jeju_data_20261024.dump`(pg_dump custom 형식, 데이터만, 487KB, 7개 테이블: 단지 1,153 / 거래 7,068 / 확정 매칭 6,920). 사용자에게 파일로 전달했고, 사용자가 본인 구글 드라이브에 업로드함. 새 세션에서는 사용자가 잠시 링크 공유를 켜면 `drive.usercontent.google.com`(허용 도메인 필요)에서 curl로 받고, 받은 뒤 공유를 해제한다(드라이브 MCP는 큰 파일을 받을 수 없음)
      - 복원: 마이그레이션한 빈 DB에 `pg_restore --data-only --no-owner --single-transaction -d "$SUPABASE_DATABASE_URL?sslmode=require" jeju_data_20261024.dump` (로컬에서 복원 시험 완료)
    - 2순위(백업이 없을 때): 원격에 직접 다시 적재한다: `npm run import:reference`(한국부동산원 JSON과 지적도 SHP는 사용자 파일, 구글 드라이브 `AL_D002_50_20261008.zip`) + `npm run collect -- --mode initial --max-calls 60`(실거래 API 호출이므로 **별도 승인 필요**) + `npm run match`
    - pg_dump/psql의 sslmode: 접속 문자열에 `?sslmode=require`를 붙여 사용
