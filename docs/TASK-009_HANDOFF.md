@@ -36,6 +36,13 @@
    - 2순위(백업이 없을 때): 원격에 직접 다시 적재한다: `npm run import:reference`(한국부동산원 JSON과 지적도 SHP는 사용자 파일, 구글 드라이브 `AL_D002_50_20261008.zip`) + `npm run collect -- --mode initial --max-calls 60`(실거래 API 호출이므로 **별도 승인 필요**) + `npm run match`
    - pg_dump/psql의 sslmode: 접속 문자열에 `?sslmode=require`를 붙여 사용
 5. (완료, PC에서) 공개 Data API 차단 확인(anon key로 REST 조회 시 데이터가 안 보여야 함, 0004 RLS)
+- **2026-10-24 Vercel 배포(진행 중)**: 팀 splendid(`splendid3`), 프로젝트 `jeju-realestate-mvp`(GitHub 연결, 프로덕션 브랜치 main). Vercel 인증 보호 `all_except_custom_domains`(로그인 필요), Node 22.x
+  - 환경 변수(Production·Preview): `DATABASE_URL`(Sensitive, 6543), `DATABASE_SSL=require`, `VITE_KAKAO_MAP_JS_KEY`. **`CRON_SECRET`·`DATA_GO_KR_SERVICE_KEY`는 미등록**(Cron은 401로 끝나 실거래 API 미호출) — Cron 실행 승인 시 등록
+  - 첫 배포가 프로젝트 첫 배포 규칙으로 Production이 됨(`dpl_7vzR1…`, ESM 결함이 있는 이전 커밋). Production Cron이 등록됐지만 위 이유로 외부 호출 없음
+  - 결함 1: 확장자 없는 상대 import → Vercel 네이티브 ESM에서 `ERR_MODULE_NOT_FOUND`(모든 API 500). `6a690a8`에서 `.js` 확장자 추가 + `tests/esmImports.test.ts`
+  - 결함 2: `DATABASE_SSL` 값이 대시보드 편집 중 빈 값이 됨 → ConfigError로 함수 중단. `require`로 복구. (설정 오류 시 503 안내로 바꾸는 개선은 승인 대기)
+  - Preview `dpl_ETVA1…`에서 확인: data-status·검색·상세·거래 API 200(Supabase 6543 경유), 함수 리전 icn1, 보안 헤더 5종 + HSTS + `x-robots-tag: noindex`
+  - 컨테이너에서 `*.vercel.app`·`<ref>.supabase.co`는 네트워크 정책으로 차단 → 배포 점검은 Vercel MCP(`web_fetch_vercel_url`, 23시간 공유 링크 생성)로 함
 6. **다음 차례** Vercel(Hobby): 프로젝트 생성·GitHub 연결, 환경변수(`DATABASE_URL`=Supabase pooler, `DATABASE_SSL=require`, `DATA_GO_KR_SERVICE_KEY`, `CRON_SECRET`, `VITE_KAKAO_MAP_JS_KEY`), 리전 icn1 허용 여부, Cron 1회 실행, 보안 헤더 확인
 7. 카카오: PAW_MAP 앱 Web 플랫폼에 배포 도메인 등록, 실제 지도 확인, 쿼터 화면 확인
 8. 배포 환경 성능 재측정(`API_BASE=<배포 URL> node scripts/perf.mjs`), 무료 운영 체크리스트·롤백 절차 문서화, 공개 여부는 사용자가 최종 결정
