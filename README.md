@@ -67,3 +67,10 @@ npm run match   # DB에 있는 데이터로 매칭 전체를 재계산(네트워
 - 후보가 없거나 여러 개, 이름 불일치, 한 필지를 원천 단지 여럿이 쓰는 경우, 거래 행의 주소가 단지 주소와 다른 경우는 모두 보류하고 `match_reviews.reason`에 사유를 기록한다. 이름만으로는 연결하지 않는다.
 - 확정된 거래에만 `transactions.apartment_id`가 설정된다. 보류 목록: docs/MATCH_REVIEW.md
 - 매일 수집(Cron) 뒤 자동으로 실행된다.
+
+## 검색·지도 화면 (TASK-006)
+
+- API: `GET /api/apartments/search?q=&city_code=&limit=`, `GET /api/apartments/map?bbox=minLng,minLat,maxLng,maxLat&city_code=`, `GET /api/apartments/{id}`
+- 지도: 카카오맵 JS SDK(`VITE_KAKAO_MAP_JS_KEY`, PAW_MAP 앱 키 공유). 키가 없거나 SDK 로드에 실패하거나 8초 안에 응답이 없으면 목록 검색으로 자동 전환한다.
+- 마커: `VERIFIED_PARCEL` 단지만, 현재 지도 범위만(이동·확대 후 300ms 디바운스로 재조회). 클러스터러로 밀집을 처리한다.
+- `npm run test:e2e`: 가짜 SDK로 지도·마커·검색·요약 카드 흐름과, SDK 차단 시 목록 대체를 390px 폭에서 검증한다(개발 DB 데이터 필요).
