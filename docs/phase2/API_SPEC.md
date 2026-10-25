@@ -22,7 +22,7 @@ GET /api/v2/analysis/apartments/{id}/status
   "apartmentId":"example", "periodMonths":24, "areaTypeM2":84,
   "summary":{"tradeCount":27,"medianPriceWon":520000000,"minPriceWon":470000000,"maxPriceWon":610000000,"medianPricePerM2Won":6120000,"yearOverYearChangePct":4.0,"comparisonStatus":"AVAILABLE"},
   "monthly":[{"contractMonth":"202610","tradeCount":2,"medianPriceWon":null,"priceStatus":"INSUFFICIENT_SAMPLE","collectionStatus":"COMPLETE","isCurrentMonth":true}],
-  "dataStatus":{"completeness":"COMPLETE","freshness":"FRESH","aggregation":"READY","lastSuccessfulSyncAt":"2026-10-24T10:00:00+09:00","missingMonths":[],"dataVersion":12,"provisionalCurrentMonth":true}
+  "dataStatus":{"completeness":"COMPLETE","freshness":"FRESH","aggregation":"READY","lastSuccessfulSyncAt":"2026-10-24T10:00:00+09:00","missingMonths":[],"dataVersion":"3f9a1c0b7d2e4a65","provisionalCurrentMonth":true}
 }
 ```
 
@@ -32,7 +32,7 @@ GET /api/v2/analysis/apartments/{id}/status
 커서에 단지·면적·기간·정렬·데이터 버전·마지막 정렬 키를 포함(서명 또는 위변조 방지). 안정 정렬: contract_date DESC, transaction_id DESC. 페이지 중 버전 변경 시 409 DATA_VERSION_CHANGED, 처음부터 재조회. 결과의 tradeCount와 페이지 총합은 동일 유효 거래 모집단에서 도출. 표본 부족 월에도 유효 거래 목록 접근 가능.
 
 ## 캐시
-키 = p2:analysis:{apartmentId}:{areaType}:{period}:{metricType}:v{dataVersion}; TTL 24시간 이내 + 버전 기반 논리적 무효화. 인스턴스 로컬 메모리만으로 일관성 보장 금지. 동일 요청 중복 계산 억제, DB/캐시 실패 시 안전하게 응답.
+(v1.5) 서버 측 캐시 저장소 없음. CDN `s-maxage`(예 300초)로 URL 단위 캐시, 응답·커서에 `dataVersion`(문자열 지문) 포함. 인스턴스 로컬 메모리 캐시 사용 금지. 동일 요청 중복 계산 억제, DB/캐시 실패 시 안전하게 응답.
 
 ## v1.1 변경 (PRD D12)
 - `monthly`: 월별 **거래량·수집 상태** 전용. `medianPriceWon`·`priceStatus`는 제거하고 분기 배열을 함께 반환: `"quarterly":[{"quarter":"2026Q3","tradeCount":4,"medianPriceWon":530000000,"priceStatus":"AVAILABLE"}]` (3건 미만이면 `medianPriceWon:null`, `INSUFFICIENT_SAMPLE`).
@@ -41,3 +41,7 @@ GET /api/v2/analysis/apartments/{id}/status
 
 ## v1.3 변경 (PRD D2)
 - 근거 거래와 `points` 항목에 `sameConditionCount`(정수, 기본 1) 추가: 같은 단지·면적·층·계약일·금액의 유효 거래 수. 2 이상이면 UI에 "같은 조건 신고 N건(원천 기준)" 표시. 집계에서는 각 거래를 모두 1건씩 센다.
+
+## v1.5 변경 (P2-TASK-002 대안 B)
+- `dataVersion`: 정수 → **문자열**(유효 거래 집합·수집 상태의 md5 지문 앞 16자). 같은 데이터면 같은 값, 무엇이든 바뀌면 다른 값.
+- 모든 응답은 요청 시 원본에서 계산(사전 집계 없음). `dataStatus.aggregation`은 항상 `READY`(계산 실패 시 오류 응답).
