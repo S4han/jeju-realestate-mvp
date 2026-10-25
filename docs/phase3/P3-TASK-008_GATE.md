@@ -1,6 +1,6 @@
 # P3-TASK-008 비용·장애·복구·출시 승인 패키지 (Phase 3)
 
-작성 2026-10-25. ✅ 확인 · ⬜ 미확인 · ⚠ 주의. **Production 플래그는 OFF 유지 — 공개는 사용자 수동 승인 후.**
+작성 2026-10-25. ✅ 확인 · ⬜ 미확인 · ⚠ 주의. **2026-10-25 사용자 A안 승인 → Production 공개 완료(8절).**
 
 ## 1. 비용 (월 0원)
 | 항목 | 상태 | 근거 |
@@ -54,4 +54,16 @@
 
 ## 7. 사용자 승인 기록
 - 2026-10-25: P3-D1~D5, 운영 DB 조회·적재, Phase 3 Preview 전용 플래그, 카카오 Preview 도메인, Preview 실기기 지도 확인.
-- Production 공개 승인: **대기**.
+- 2026-10-25: Production 공개 A안 승인(변화율 안내 문구 추가 후 공개).
+
+## 8. Production 공개 결과 (2026-10-25)
+- 변화율 안내 문구 추가(117381d): 상세 카드 보조 문구 + 하단 안내. 전체 230/230, Phase 3 E2E 22/22(안내 문구 확인 1건 추가).
+- Production 브랜치 fast-forward → 117381d.
+- 1차 배포(플래그 OFF) `dpl_5vPPtxio…`: data-status·top-apartments·search·apartments/684·v2 status 200, v3 status 404.
+- Production 환경 변수 추가: `P3_CURSOR_SECRET`(sensitive, Preview와 다른 값), `PHASE3_REGION_ANALYSIS_ENABLED=true`.
+- 2차 배포(플래그 ON, redeploy) `dpl_AhZS2nsL…`:
+  - status 200, snapshotId `1-3659bf993805d395`(Preview·대사와 동일), 데이터 FRESH·COMPLETE.
+  - statistics(시): 제주시 2,962건·4,335,501원/㎡, 서귀포시 1,122건·3,867,879원/㎡, 미매칭 124/7 — 운영 대사(P3-TASK-007 4절)와 일치.
+  - list 2시·74 읍면동, detail(표선면) 17건·24개월 월별, apartments(연동) 200 + 서명 커서 발급.
+- 롤백: 플래그 `false` + 재배포, 또는 `dpl_HJojQPWE…`(d203298) 승격.
+- ⬜ 휴대폰 화면 확인(사용자). ⚠ Production 커서 비밀값도 MCP 호출로 설정되어 작업 기록에 1회 나타남 → 대시보드에서 새 값으로 교체 권장(교체 후 재배포, 기존 커서만 무효화되고 데이터 영향 없음).
