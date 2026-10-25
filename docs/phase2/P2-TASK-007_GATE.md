@@ -12,7 +12,7 @@
 | Vercel 함수 수 | ✅ | 9개(Phase 2는 단일 함수 1개 추가, D5). Hobby 배포당 12개 제한 이내 |
 | CDN 캐시로 함수 호출 감소 | ✅ | `s-maxage=300`, Preview에서 같은 URL 두 번째 요청 `x-vercel-cache: HIT` 확인 |
 | Vercel 청구 내역 | ✅(간접) | 청구 API 조회(2026-09-25~10-25) 결과 "costs_not_found" — 청구 기록 없음 |
-| Vercel 한도 초과 시 정지 vs 과금 | ⬜ | 계정 Settings → Billing/Usage 화면 확인 필요(G1부터 미확인) |
+| Vercel 한도 초과 시 정지 vs 과금 | ✅ | 2026-10-25 사용자 계정 Billing 화면: **Hobby Plan Active**, 사용량 추가 과금("on-demand usage")·Spend Management는 Pro 업그레이드 시에만 제공 → Hobby는 초과분 자동 과금 경로 없음. 청구 API도 기록 없음. ⚠ 초과 시 과금 대신 기능 제한(서비스 중단 가능) — 비용이 아닌 가용성 위험. Pro 업그레이드 버튼은 누르지 말 것 |
 | Supabase 결제수단·Spend Cap | ⬜ | 조직 Billing 화면 확인 필요 |
 | 카카오 지도 쿼터 초과 시 동작 | ⬜ | Phase 2는 지도 호출을 늘리지 않음. 다만 공개 자체의 전제(Phase 1 미해결) |
 | data.go.kr 일일 한도 | ⬜ | Phase 2 추가 호출 없음. Phase 1 미해결 항목 |
@@ -38,7 +38,7 @@
 현재: Production(`jeju-realestate-mvp.vercel.app`)에는 Phase 2 코드가 없음(v2 경로 404). 사이트는 Vercel 인증 보호(비공개) 유지 중.
 
 권장 순서:
-1. ⬜ 계정 화면 확인(1절 ⬜ 3건: Vercel 초과 시 동작, Supabase 결제수단/Spend Cap, 카카오 쿼터) — **과금 차단 불확실 시 공개 보류**(PRD).
+1. ⬜ 계정 화면 확인(1절 ⬜ 2건 남음: Supabase 결제수단/Spend Cap, 카카오 쿼터. Vercel은 확인 완료) — **과금 차단 불확실 시 공개 보류**(PRD).
 2. Phase 2 브랜치를 Production 배포 브랜치에 병합 → **플래그 OFF로** Production 배포 → Phase 1 회귀 확인(지도·검색·상세·대시보드).
 3. Production 환경 변수 `P2_CURSOR_SECRET`(새 값, Preview와 다르게) 설정, `PHASE2_PRICE_ANALYSIS_ENABLED=true` → 재배포 → 실데이터 확인.
 4. 문제 시 즉시 플래그 `false` + 재배포(3절, 약 1분).
