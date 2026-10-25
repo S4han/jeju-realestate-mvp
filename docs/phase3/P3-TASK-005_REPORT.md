@@ -46,6 +46,9 @@
  ];
 ```
 
-## 6. 미검증
-- Vercel 배포 환경에서 `[view]` 경로·압축·응답 시간(Preview 플래그 ON 필요, 승인 후).
+## 6. 배포 확인(Preview, 플래그 OFF)
+- Phase 3 브랜치 Preview `dpl_3Aja4ARh…`(fa2e483) READY — 함수 10개로 빌드 성공. `/api/v3/regions/status` → **우리 함수의 JSON 404** `{"error":{"code":"NOT_FOUND"}}`(플랫폼 404 아님) → `[view]` 경로 라우팅·플래그 OFF 차단 확인.
+
+## 7. 미검증
+- 플래그 ON 상태의 배포 응답·압축·응답 시간(Preview 플래그 ON + 운영 적재 필요, 승인 후).
 - 운영 데이터 기준 통계·대사(운영 적재 후).
