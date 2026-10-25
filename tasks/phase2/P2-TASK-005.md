@@ -29,3 +29,8 @@ docs/phase2/PRD.md
 - 테스트: 단위·DB 125/125 통과. E2E(합성 운영 규모 DB `p2_design`, 390px) 17/17 통과 — 플래그 OFF: 탭 2개·v2 요청은 status 1건(404)뿐·전월세 탭 정상 / ON: 카드·그래프·툴팁·근거 페이징·가로 넘침 없음·all 가격 미표시·all에서 points/transactions 미호출.
 - 실행: `DATABASE_URL=... E2E_APARTMENT_ID=1 node tests/e2e/phase2.e2e.mjs`
 - 미검증: 미수집·표본 부족·STALE 화면(합성 DB에 해당 상태 없음, API 판정은 DB 테스트로 검증), 실데이터 화면(Preview 플래그 ON 필요), 스크린리더 실기기 확인. 기존 지도 E2E(`map.e2e.mjs`)는 로컬 UI DB 문제로 변경 전 코드에서도 같은 실패 — 이번 변경과 무관.
+
+## Preview 플래그 ON (2026-10-25, 사용자 승인)
+- Vercel 환경 변수: `PHASE2_PRICE_ANALYSIS_ENABLED=true`(plain), `P2_CURSOR_SECRET`(sensitive, 44자 무작위) — **대상 Preview, Git 브랜치 `claude/phase2-price-analysis`만**. Production·다른 브랜치 Preview에는 없음.
+- 재배포 `dpl_Ccv96UYwK3K6tMgehk6fh4hhvtVi`(cc17d66) READY. 확인: 단지 27 status·summary·transactions 200(84㎡대 36건, 중위 5억 9,900만원, 1년 전 대비 +7%, dataVersion 일치, COMPLETE/FRESH), Production `/api/v2/...` 404(경로 없음).
+- 되돌리기: 두 변수 삭제 후 재배포(또는 플래그 값을 비움) → 모든 v2 경로 404·탭 미표시.
