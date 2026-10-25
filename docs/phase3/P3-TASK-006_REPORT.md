@@ -82,3 +82,9 @@
 ## 4. 미검증
 - **실제 카카오 지도 위 폴리곤 렌더링·성능(모바일)**: 이 작업 환경에서 카카오 SDK를 불러올 수 없음 → Preview 플래그 ON 후 휴대폰 확인 필요. Phase 3 Preview 도메인은 카카오에 미등록.
 - 실데이터 화면(운영 적재 전). 스크린리더 실기기 확인.
+
+## 5. 운영 DB 적재 (2026-10-25, 사용자 PC `regions.ps1`, 승인 후)
+- migrate(0005 적용) → load(세트 1 VERIFIED) → activate(세트 1 ACTIVE, 2026-10-25 11:48:54Z).
+- status: 세트 1 ACTIVE(코드 2026-06-30, 경계 2026-10-01, 20m), 시 2·읍면동 74, 경계 74·정점 12,311·면적 1,848.1㎢, 테이블 240kB — 로컬 리허설과 동일.
+- 기능 플래그는 Production·Preview 모두 OFF 상태(사용자 화면 변화 없음). 되돌리기: `regions.ps1 -Step rollback`.
+- 2026-10-25 Phase 3 브랜치 Preview 전용 환경 변수 추가(승인): `PHASE3_REGION_ANALYSIS_ENABLED=true`, `P3_CURSOR_SECRET`(sensitive, 44자) — Git 브랜치 `claude/phase3-region-analysis` 한정. Production 미설정(OFF).
