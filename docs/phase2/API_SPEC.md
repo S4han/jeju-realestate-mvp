@@ -45,3 +45,10 @@ GET /api/v2/analysis/apartments/{id}/status
 ## v1.5 변경 (P2-TASK-002 대안 B)
 - `dataVersion`: 정수 → **문자열**(유효 거래 집합·수집 상태의 md5 지문 앞 16자). 같은 데이터면 같은 값, 무엇이든 바뀌면 다른 값.
 - 모든 응답은 요청 시 원본에서 계산(사전 집계 없음). `dataStatus.aggregation`은 항상 `READY`(계산 실패 시 오류 응답).
+
+## 구현 확정 (P2-TASK-004, 2026-10-25)
+- 경로: `GET /api/v2/analysis/apartments/{id}/{view}`, `view ∈ status|areas|summary|monthly|points|transactions`. 함수 파일 1개(`api/v2/analysis/apartments/[id]/[view].ts`), `vercel.json` 변경 없음. 배포 함수 수 8 → 9.
+- **기능 플래그 OFF(`PHASE2_PRICE_ANALYSIS_ENABLED` ≠ `"true"`) → 모든 view 404 `{"error":{"code":"NOT_FOUND"}}`, DB 접근 없음**(사용자 결정). 알 수 없는 view·단지도 같은 404.
+- 입력: `period` 12/24/36(기본 24), `areaType` 1~1000 정수 또는 `all`(생략 시 기본 면적: 건수 최다·동률 시 작은 유형, 거래 없으면 `all`), `pageSize` 1~100(기본 20), `cursor` 최대 1024자. 위반 시 400.
+- `transactions`: 커서 = base64url(JSON{단지, 면적, 기간, dataVersion, 마지막 계약일, 마지막 거래 ID}) + HMAC-SHA256(서버 환경 변수 `P2_CURSOR_SECRET`, 32자 이상). 위변조·다른 필터의 커서 400, 버전 변경 409 `DATA_VERSION_CHANGED`. 비밀값 미설정 시 503 `ANALYSIS_MISCONFIGURED`(로그에는 변수 이름만).
+- 200 응답 공통 필드: `apartmentId, periodMonths, areaTypeM2, dataVersion`. 캐시 `s-maxage=300`, 오류는 `no-store`. DB 장애 503 `DB_UNAVAILABLE`(내부 정보 미노출).

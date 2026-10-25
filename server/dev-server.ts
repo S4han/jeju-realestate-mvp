@@ -14,6 +14,8 @@ const routes: Route[] = [
   { pattern: /^\/api\/apartments\/(?<id>[^/]+)$/, load: () => import("../api/apartments/[id]/index.js") },
   { pattern: /^\/api\/apartments\/(?<id>[^/]+)\/transactions$/, load: () => import("../api/apartments/[id]/transactions.js") },
   { pattern: /^\/api\/transactions\/(?<id>[^/]+)$/, load: () => import("../api/transactions/[id].js") },
+  // Phase 2 (D4): price analysis, flag-guarded inside the handler.
+  { pattern: /^\/api\/v2\/analysis\/apartments\/(?<id>[^/]+)\/(?<view>[^/]+)$/, load: () => import("../api/v2/analysis/apartments/[id]/[view].js") },
 ];
 
 const config = loadServerConfig();

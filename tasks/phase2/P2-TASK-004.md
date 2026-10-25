@@ -20,3 +20,9 @@ docs/phase2/API_SPEC.md
 
 ## 제한
 검증·개발은 Claude Code 담당. 이 문서 생성 시 실제 API 호출·DB 변경·코드 개발은 수행하지 않음. 기능 플래그 기본 OFF, 월 0원 목표, 비밀키 보호.
+
+## 결과 (2026-10-25)
+- 구현: `api/v2/analysis/apartments/[id]/[view].ts`(함수 1개), `server/phase2/handlers.ts`(입력 검증·view 분기), `server/phase2/cursor.ts`(HMAC 커서), `server/phase2/flag.ts`(OFF 기본, OFF 시 404·DB 미접근). Phase 1 변경은 D4 허용 범위인 `server/dev-server.ts` 경로 1줄뿐.
+- 테스트: `tests/phase2/api.test.ts` 8개 — 플래그 판정·OFF 시 6개 view 모두 404(DB 미접근), 커서 위변조/다른 비밀값/형식 오류 거부, 입력 검증 400, 미존재 단지 404, 기본 면적·공통 dataVersion·캐시, `all`·points, 커서 페이지 무중복·필터 불일치 400·데이터 변경 409·비밀값 없음 503, DB 장애 503. 전체 125/125.
+- 로컬 HTTP 확인(개발 서버, 합성 DB): 플래그 ON 6개 view 200, 잘못된 view 404, 잘못된 기간 400, 플래그 OFF 404, Phase 1 검색 200.
+- 남은 일: Preview에서 경로 라우팅 확인(플래그 OFF 상태의 JSON 404로 판별), 운영 데이터로의 실제 확인은 플래그 ON 승인 후.
