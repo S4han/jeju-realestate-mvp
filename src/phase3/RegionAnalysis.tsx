@@ -191,6 +191,7 @@ export function RegionAnalysis({ appKey }: { appKey: string | undefined }) {
           <footer className="mt-6 space-y-1 text-[11px] leading-4 text-slate-500">
             <p>기간 {ymd(stats.contractPeriod.startInclusive)} ~ {ymd(stats.contractPeriod.endExclusive)} 전날까지(계약일 기준), 이번 달({ym(ds!.currentMonth)})은 신고 기한 때문에 잠정입니다.</p>
             <p>가격은 확정된 단지의 유효 매매만으로 거래별 '가격 ÷ 전용면적'의 중앙값을 계산하며, 3건 미만이면 표시하지 않습니다. 해제 거래는 제외합니다.</p>
+            <p>1년 전 대비는 최근 12개월과 직전 12개월의 중앙값 비교로, 실제 가격 변동 외에도 그 기간에 거래된 단지·면적 구성의 차이에 따라 크게 달라질 수 있습니다.</p>
             {parent && stats.unmapped[parent.slice(0, 5)] && stats.unmapped[parent.slice(0, 5)]!.total > stats.unmapped[parent.slice(0, 5)]!.mapped && (
               <p>단지를 확정하지 못한 거래 {(stats.unmapped[parent.slice(0, 5)]!.total - stats.unmapped[parent.slice(0, 5)]!.mapped).toLocaleString("ko-KR")}건은 읍면동 통계에서 제외했습니다.</p>
             )}
@@ -335,7 +336,7 @@ function RegionDetail(props: { regionId: string; period: Period; snapshotId: str
           sub={r.medianPricePerM2Won !== null ? `평당 ${formatKrw(r.medianPricePerM2Won * PYEONG)}` : STATUS_TEXT[r.priceStatus]} />
         <Stat label="거래" value={r.hasApartments ? `${r.tradeCount.toLocaleString("ko-KR")}건` : "-"} sub={r.countStatus === "INCOMPLETE" ? "수집 누락 포함 — 미확인" : r.hasApartments ? "확정 단지 유효 매매" : "아파트 없음"} />
         <Stat label="1년 전 대비" value={r.change.pct !== null ? `${r.change.pct > 0 ? "▲ +" : r.change.pct < 0 ? "▼ " : ""}${r.change.pct.toFixed(1)}%` : "-"}
-          sub={r.change.status === "AVAILABLE" ? "최근 12개월 vs 직전 12개월" : `표본 부족(최근 ${r.change.recentCount}건·직전 ${r.change.previousCount}건, 각 3건 필요)`} />
+          sub={r.change.status === "AVAILABLE" ? "최근 12개월 vs 직전 12개월, 거래 단지 구성에 따라 크게 달라질 수 있음" : `표본 부족(최근 ${r.change.recentCount}건·직전 ${r.change.previousCount}건, 각 3건 필요)`} />
         <Stat label="데이터" value={d.dataStatus.freshness === "STALE" ? "갱신 지연" : "정상"} sub={`이번 달(${ym(d.dataStatus.currentMonth)}) 잠정`} />
       </dl>
       <MonthlyBars monthly={d.monthly} />

@@ -107,6 +107,7 @@ try {
     await settle(page);
     const detail = page.locator(`section[aria-label="${regionName} 상세"]`);
     check("ON: detail card shows price, count and change", (await detail.getByText("㎡당 중위가격").count()) === 1 && (await detail.getByText("1년 전 대비").count()) === 1);
+    check("ON: change-rate caveat shown in the footer", (await page.locator("footer").innerText()).includes("단지·면적 구성의 차이"));
     check("ON: detail lists traded complexes linking to Phase 1 detail", (await detail.locator('a[href^="#/apartments/"]').count()) > 0);
     check("ON: selected polygon is outlined", (await page.locator('[data-region][data-stroke="3"]').count()) > 0);
     if (shots) await page.screenshot({ path: `${shots}/p3-detail.png`, fullPage: true });
