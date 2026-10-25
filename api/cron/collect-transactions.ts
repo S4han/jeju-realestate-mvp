@@ -4,7 +4,7 @@ import type pg from "pg";
 import { ConfigError, loadCollectorConfig, type CollectorConfig } from "../../server/config.js";
 import { getPool } from "../../server/db.js";
 import { createBudget } from "../../server/collect/budget.js";
-import { collect } from "../../server/collect/collector.js";
+import { collectDaily } from "../../server/collect/daily.js";
 import { recentMonths } from "../../server/collect/months.js";
 import { runMatching } from "../../server/match/run.js";
 import { sendJson, serviceUnavailable, type ApiRequest, type ApiResponse } from "../../server/http.js";
@@ -30,11 +30,13 @@ export default async function handler(req: ApiRequest, res: ApiResponse): Promis
     return;
   }
   const budget = createBudget(pool, { dailyLimit: config.API_DAILY_CALL_LIMIT, runLimit: MAX_CALLS_PER_RUN });
-  const { jobs, stoppedBy } = await collect(pool, { months: recentMonths(4), serviceKey: config.DATA_GO_KR_SERVICE_KEY, budget });
+  // Transient failures get one more attempt at the end of the run (CRON-001 D1).
+  const { jobs, retried, stoppedBy } = await collectDaily(pool, { months: recentMonths(4), serviceKey: config.DATA_GO_KR_SERVICE_KEY, budget });
   // Matching is local (no external calls) and re-derives links for new or changed rows.
   const matching = await runMatching(pool);
-  sendJson(res, {
-    status: 200,
-    body: { calls: budget.callsThisRun(), stoppedBy: stoppedBy ?? null, matching: { confirmed: matching.confirmed, pending: matching.pending }, jobs: jobs.map(({ source, city, period, status, errorCode }) => ({ source, city, period, status, errorCode })) },
-  });
+  const brief = ({ source, city, period, status, errorCode }: (typeof jobs)[number]) => ({ source, city, period, status, errorCode });
+  const body = { calls: budget.callsThisRun(), stoppedBy: stoppedBy ?? null, matching: { confirmed: matching.confirmed, pending: matching.pending }, jobs: jobs.map(brief), retried: retried.map(brief) };
+  // Run summary for the runtime log (counts and codes only; no keys or URLs).
+  console.log(`cron collect ${JSON.stringify(body)}`);
+  sendJson(res, { status: 200, body });
 }

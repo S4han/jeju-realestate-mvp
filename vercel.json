@@ -38,7 +38,7 @@
   ],
   "functions": {
     "api/cron/collect-transactions.ts": {
-      "maxDuration": 60
+      "maxDuration": 300
     }
   },
   "regions": [
