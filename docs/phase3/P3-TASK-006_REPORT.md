@@ -89,3 +89,4 @@
 - 기능 플래그는 Production·Preview 모두 OFF 상태(사용자 화면 변화 없음). 되돌리기: `regions.ps1 -Step rollback`.
 - 2026-10-25 Phase 3 브랜치 Preview 전용 환경 변수 추가(승인): `PHASE3_REGION_ANALYSIS_ENABLED=true`, `P3_CURSOR_SECRET`(sensitive, 44자) — Git 브랜치 `claude/phase3-region-analysis` 한정. Production 미설정(OFF).
 - Preview 재배포 `dpl_2hQdBBKF…`(e18f058) READY, 실데이터 확인: 제주시 읍면동 통계 200 — 노형동 527건·연동 503건·외도일동 259건, 가격 표시 가능 29곳(P3-TASK-001 실측 29와 일치), 5분위 5단계(226만~725만원/㎡), 미매칭 124건(실측 124와 일치), 아파트 없음·거래 없음·표본 부족 구분, Brotli 압축 전송 확인.
+- 2026-10-25 카카오 앱(Pat-Map) Web 도메인에 Phase 3 Preview 주소 추가(사용자). **사용자 휴대폰 확인 완료: Phase 3 Preview에서 실제 카카오 지도 위 지역 지도 정상 표시**(4절 미검증 항목 중 "실제 카카오 지도 렌더링" 해소).
