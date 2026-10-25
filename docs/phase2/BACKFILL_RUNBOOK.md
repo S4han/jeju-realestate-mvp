@@ -4,7 +4,7 @@
 Phase 1 수집 코드를 그대로 재사용하고(정규화·해제 처리·sync_jobs·호출 예산), 전월세는 받지 않는다. Phase 1 화면은 최근 12개월만 보여 주므로 과거 거래가 들어와도 변하지 않는다.
 
 ## 준비 (1회)
-1. Node.js **22 LTS** 설치: https://nodejs.org (설치 후 새 PowerShell 창)
+1. Node.js **22 이상**(LTS) 설치: https://nodejs.org (설치 후 새 PowerShell 창). Node 24에서 `npm ci`의 engines 경고(EBADENGINE)는 무시해도 됨
 2. PostgreSQL 클라이언트(psql·pg_dump): Phase 1 키트 때 설치한 것 사용
 3. 저장소 받기(둘 중 하나)
    - Git이 있으면: `git clone -b claude/phase2-price-analysis https://github.com/S4han/jeju-realestate-mvp.git C:\jeju_repo`

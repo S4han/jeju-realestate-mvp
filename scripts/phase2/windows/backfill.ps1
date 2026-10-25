@@ -31,7 +31,8 @@ function Read-Secret([string]$prompt) {
 }
 function Assert-Node {
   $v = (& node -v 2>$null)
-  if (-not $v -or -not $v.StartsWith('v22.')) { throw "Node.js 22가 필요합니다(현재: $v). https://nodejs.org 에서 22 LTS 설치 후 새 PowerShell에서 다시 실행하세요." }
+  # 이 일회성 PC 스크립트는 Node 22 이상이면 된다(앱 런타임은 package.json engines 22.x로 별도 고정).
+  if (-not $v -or [int]($v.TrimStart('v').Split('.')[0]) -lt 22) { throw "Node.js 22 이상이 필요합니다(현재: $v). https://nodejs.org 에서 LTS 설치 후 새 PowerShell에서 다시 실행하세요." }
   if (-not (Test-Path (Join-Path $repo 'node_modules\tsx'))) { throw "의존성이 없습니다. 저장소 폴더에서 'npm ci' 를 먼저 실행하세요." }
   return $v
 }
