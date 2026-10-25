@@ -53,4 +53,13 @@
 
 ## 6. 사용자 승인 기록
 - 2026-10-25: Preview 전용 플래그 ON 승인·실시, 휴대폰 확인 완료.
-- Production 공개 승인: **대기**.
+- 2026-10-25: **Production 공개 승인(A안)** — 사용자.
+
+## 7. Production 반영 기록 (2026-10-25)
+1. `claude/phase2-price-analysis`(cca7132)를 Production 브랜치 `claude/jeju-realestate-mvp-analysis-6suje9`에 fast-forward 병합.
+2. cca7132(문서만 변경)는 Ignored Build Step으로 취소 → 코드가 같은 마지막 코드 커밋 **8d0925a**로 Production 배포 `dpl_DBfGvM6R…`(플래그 OFF).
+   - 회귀: v2 404, 대시보드·검색·지도(마커 582)·상세·전월세·첫 화면 200.
+3. Production 환경 변수 `P2_CURSOR_SECRET`(새 48자, Preview와 다른 값, sensitive), `PHASE2_PRICE_ANALYSIS_ENABLED=true` 추가 → 재배포 `dpl_5cNew7XB…` READY.
+   - 확인: 단지 27 summary 200(84㎡대 36건, 중위 5억 9,900만원, +7%), transactions 200(서명이 Preview와 다름), 단지 1097 36개월 monthly 200(36개월 모두 COMPLETE).
+4. 되돌리기: Production `PHASE2_PRICE_ANALYSIS_ENABLED`를 `false`로 바꾸고 현재 Production 배포 재배포(약 1분). 전체 롤백 지점: `dpl_89EQW5ZA…`(22578e5, Phase 2 이전).
+5. 사이트 접근은 기존 Vercel 인증 보호 유지(비공개).
