@@ -114,6 +114,7 @@ export function TransactionsPage({ id }: { id: string }) {
               </button>
             )}
           </div>
+          {analysisTab && <p className="mt-1 text-[11px] text-slate-500">매매·전월세 건수는 최근 12개월, 모든 면적 기준입니다.</p>}
           <div className={`mt-2 flex items-center gap-2 ${analysis ? "hidden" : ""}`}>
             <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto" aria-label="전용면적 필터">
               {[null, ...(first?.area_groups.map((g) => g.m2) ?? [])].map((m) => (

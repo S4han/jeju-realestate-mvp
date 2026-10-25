@@ -271,25 +271,29 @@ function PriceChart({ points, monthly }: { points: PointsView; monthly: MonthlyV
   const sy = (v: number) => m.t + (1 - (v - y0) / (y1 - y0 || 1)) * (h - m.t - m.b);
   const xLabels = months.filter((_, i) => i % (months.length > 12 ? 6 : 3) === 0);
 
-  // Quarter midpoints; the line breaks at quarters without a median (never drawn through gaps or zero).
-  const qMid = (q: string) => {
+  // Quarter medians sit at quarter midpoints; the line breaks at quarters without a median (never drawn
+  // through gaps or zero). A quarter with no neighbour spans its own quarter so it stays visible.
+  const clampT = (t: number) => Math.min(Math.max(t, x0), x1);
+  const qSpan = (q: string) => {
     const y = Number(q.slice(0, 4));
     const qn = Number(q.slice(5));
-    return (Date.UTC(y, (qn - 1) * 3, 1) + Date.UTC(y, qn * 3, 1)) / 2;
+    return [clampT(Date.UTC(y, (qn - 1) * 3, 1)), clampT(Date.UTC(y, qn * 3, 1))] as const;
   };
-  const segments: string[] = [];
-  let cur: string[] = [];
+  type MedianPt = { quarter: string; x: number; y: number; value: number; tradeCount: number; span: readonly [number, number] };
+  const runs: MedianPt[][] = [];
+  let cur: MedianPt[] = [];
   for (const q of quarters) {
     if (q.medianPriceWon === null) {
-      if (cur.length) segments.push(cur.join(" "));
+      if (cur.length) runs.push(cur);
       cur = [];
       continue;
     }
-    const t = Math.min(Math.max(qMid(q.quarter), x0), x1);
-    cur.push(`${cur.length ? "L" : "M"}${sx(t).toFixed(1)},${sy(q.medianPriceWon).toFixed(1)}`);
+    const span = qSpan(q.quarter);
+    cur.push({ quarter: q.quarter, x: sx((span[0] + span[1]) / 2), y: sy(q.medianPriceWon), value: q.medianPriceWon, tradeCount: q.tradeCount, span: [sx(span[0]), sx(span[1])] });
   }
-  if (cur.length) segments.push(cur.join(" "));
-  const singleQuarterDots = segments.filter((s) => !s.includes("L"));
+  if (cur.length) runs.push(cur);
+  const medianPts = runs.flat();
+  const quarterLabel = (q: string) => `${q.slice(0, 4)}년 ${q.slice(5)}분기`;
 
   const dealLines = (p: Deal) => [
     formatKrw(p.priceWon),
@@ -307,8 +311,9 @@ function PriceChart({ points, monthly }: { points: PointsView; monthly: MonthlyV
         개별 거래 {points.points.length}건
       </li>
       <li className="flex items-center gap-1.5">
-        <svg width="16" height="10" aria-hidden="true">
-          <line x1="0" y1="5" x2="16" y2="5" stroke={SERIES_MEDIAN} strokeWidth="2" />
+        <svg width="18" height="10" aria-hidden="true">
+          <line x1="0" y1="5" x2="18" y2="5" stroke={SERIES_MEDIAN} strokeWidth="2" />
+          <rect x="5.5" y="1.5" width="7" height="7" transform="rotate(45 9 5)" fill={SERIES_MEDIAN} stroke="#ffffff" strokeWidth="1.5" />
         </svg>
         분기 중위가격(분기 3건 이상)
       </li>
@@ -327,7 +332,7 @@ function PriceChart({ points, monthly }: { points: PointsView; monthly: MonthlyV
       <tbody>
         {quarters.map((q) => (
           <tr key={q.quarter} className="border-t border-slate-100">
-            <td className="py-1">{q.quarter.replace("Q", "년 ")}분기</td>
+            <td className="py-1">{quarterLabel(q.quarter)}</td>
             <td>{q.tradeCount}건</td>
             <td>{q.medianPriceWon === null ? STATUS_REASON[q.priceStatus] : formatKrw(q.medianPriceWon)}</td>
           </tr>
@@ -356,13 +361,6 @@ function PriceChart({ points, monthly }: { points: PointsView; monthly: MonthlyV
                 {ym(mm).slice(2)}
               </text>
             ))}
-            {segments.map((d, i) => (
-              <path key={i} d={d} fill="none" stroke={SERIES_MEDIAN} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-            ))}
-            {singleQuarterDots.map((d, i) => {
-              const [cx, cy] = d.slice(1).split(",").map(Number);
-              return <rect key={i} x={cx! - 8} y={cy! - 1} width="16" height="2" fill={SERIES_MEDIAN} />;
-            })}
             {points.points.map((p) => {
               const cx = sx(toTime(p.contractDate) + 43_200_000);
               const cy = sy(p.priceWon);
@@ -371,6 +369,27 @@ function PriceChart({ points, monthly }: { points: PointsView; monthly: MonthlyV
                 <g key={p.transactionId} onMouseEnter={show} onClick={show}>
                   <circle cx={cx} cy={cy} r="4" fill={SERIES_DEAL} stroke="#ffffff" strokeWidth="2" paintOrder="stroke" />
                   <circle cx={cx} cy={cy} r="11" fill="transparent" />
+                </g>
+              );
+            })}
+            {/* Median layer above the deal dots, so a quarter median is never hidden behind deals. */}
+            {runs.map((run, i) => (
+              <path
+                key={i}
+                d={run.length > 1 ? run.map((p, j) => `${j ? "L" : "M"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ") : `M${run[0]!.span[0].toFixed(1)},${run[0]!.y.toFixed(1)} H${run[0]!.span[1].toFixed(1)}`}
+                fill="none"
+                stroke={SERIES_MEDIAN}
+                strokeWidth="2"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+            ))}
+            {medianPts.map((p) => {
+              const show = () => setTip({ x: p.x, y: p.y, lines: [`${quarterLabel(p.quarter)} 중위가격`, formatKrw(p.value), `거래 ${p.tradeCount}건`] });
+              return (
+                <g key={p.quarter} onMouseEnter={show} onClick={show}>
+                  <rect x={p.x - 4} y={p.y - 4} width="8" height="8" transform={`rotate(45 ${p.x} ${p.y})`} fill={SERIES_MEDIAN} stroke="#ffffff" strokeWidth="2" paintOrder="stroke" />
+                  <circle cx={p.x} cy={p.y} r="11" fill="transparent" />
                 </g>
               );
             })}
