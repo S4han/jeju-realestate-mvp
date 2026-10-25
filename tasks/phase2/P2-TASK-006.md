@@ -20,3 +20,6 @@ docs/phase2/TEST_PLAN.md
 
 ## 제한
 검증·개발은 Claude Code 담당. 이 문서 생성 시 실제 API 호출·DB 변경·코드 개발은 수행하지 않음. 기능 플래그 기본 OFF, 월 0원 목표, 비밀키 보호.
+
+## 결과 (2026-10-25)
+보고서: `docs/phase2/P2-TASK-006_REPORT.md`. 필수 30 TC 통과(`tests/phase2/tc.db.test.ts`), 전체 155/155. TC-010에서 근거 거래 API의 `all` 가격 노출 결함 발견·400으로 수정. 로컬 p95 13~24ms. 미검증: 배포 환경 p95, 운영 DB EXPLAIN, Phase 1 지도 E2E(로컬 환경).

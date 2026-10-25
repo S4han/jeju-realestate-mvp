@@ -75,6 +75,8 @@ export async function handleAnalysis(pool: pg.Pool, id: string | undefined, view
           return ok({ points: p.points, truncated: p.truncated });
         }
         case "transactions": {
+          // Evidence lists prices, so like points it needs one area type ("all" would mix areas, PRD).
+          if (area === "all") return badRequest("areaType is required for transactions");
           const secret = env.cursorSecret!;
           let after;
           if (q.cursor) {

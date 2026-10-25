@@ -36,7 +36,7 @@ GET /api/v2/analysis/apartments/{id}/status
 
 ## v1.1 변경 (PRD D12)
 - `monthly`: 월별 **거래량·수집 상태** 전용. `medianPriceWon`·`priceStatus`는 제거하고 분기 배열을 함께 반환: `"quarterly":[{"quarter":"2026Q3","tradeCount":4,"medianPriceWon":530000000,"priceStatus":"AVAILABLE"}]` (3건 미만이면 `medianPriceWon:null`, `INSUFFICIENT_SAMPLE`).
-- `points`(신규): 가격 그래프용 유효 거래 점 전체 `[{"transactionId","contractDate","priceWon","areaM2","floor"}]`. 선택 면적 유형 필수(`all` 불가), 상한 500건(초과 시 `truncated:true`), 데이터 버전 포함. 점 수는 같은 조건의 `summary.tradeCount`와 일치해야 한다.
+- `points`(신규): 가격 그래프용 유효 거래 점 전체 `[{"transactionId","contractDate","priceWon","areaM2","floor"}]`. 선택 면적 유형 필수(`all` 불가, `transactions`도 동일 — 2026-10-25 P2-TC-010에서 발견·수정), 상한 500건(초과 시 `truncated:true`), 데이터 버전 포함. 점 수는 같은 조건의 `summary.tradeCount`와 일치해야 한다.
 - 함수 수(P2-TASK-001 D5): 분석 API는 하나의 함수에서 경로별로 처리한다.
 
 ## v1.3 변경 (PRD D2)
