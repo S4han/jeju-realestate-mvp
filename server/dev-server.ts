@@ -16,6 +16,8 @@ const routes: Route[] = [
   { pattern: /^\/api\/transactions\/(?<id>[^/]+)$/, load: () => import("../api/transactions/[id].js") },
   // Phase 2 (D4): price analysis, flag-guarded inside the handler.
   { pattern: /^\/api\/v2\/analysis\/apartments\/(?<id>[^/]+)\/(?<view>[^/]+)$/, load: () => import("../api/v2/analysis/apartments/[id]/[view].js") },
+  // Phase 3 region analysis (P3-D3 exception): the single v3 function, flag-guarded inside.
+  { pattern: /^\/api\/v3\/regions\/(?<view>[^/]+)$/, load: () => import("../api/v3/regions/[view].js") },
 ];
 
 const config = loadServerConfig();
