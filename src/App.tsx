@@ -7,6 +7,8 @@ import { SearchBox } from "./components/SearchBox";
 import { SummaryCard } from "./components/SummaryCard";
 import { TransactionsPage } from "./components/TransactionsPage";
 import { describeStatus, fetchDataStatus, type DataStatusState } from "./dataStatus";
+import { isRegionAnalysisAvailable } from "./phase3/api";
+import { RegionAnalysis } from "./phase3/RegionAnalysis";
 
 const KAKAO_KEY = import.meta.env.VITE_KAKAO_MAP_JS_KEY as string | undefined;
 
@@ -30,6 +32,8 @@ export default function App() {
   const [mapFailed, setMapFailed] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [focus, setFocus] = useState<{ lat: number; lng: number; seq: number } | null>(null);
+  // Phase 3 (P3-D3): region analysis is reachable only when its status API answers 200 (feature flag on).
+  const [regionsOn, setRegionsOn] = useState(false);
   const hash = useHash();
   const detailId = /^#\/apartments\/(\d+)$/.exec(hash)?.[1];
   // Views live in the URL hash so each one can be linked: #/ dashboard (first screen), #/map, #/list.
@@ -38,6 +42,7 @@ export default function App() {
 
   useEffect(() => {
     void fetchDataStatus().then(setStatus);
+    void isRegionAnalysisAvailable().then(setRegionsOn);
   }, []);
 
   const onUnavailable = useCallback(() => setMapFailed(true), []);
@@ -49,6 +54,7 @@ export default function App() {
 
   // key: filters and pages reset when moving to another apartment.
   if (detailId) return <TransactionsPage key={detailId} id={detailId} />;
+  if (regionsOn && hash === "#/regions") return <RegionAnalysis appKey={KAKAO_KEY} />;
 
   return (
     <div className="flex h-dvh flex-col bg-slate-50 text-slate-900">
@@ -96,6 +102,14 @@ export default function App() {
       <main className="relative min-h-0 flex-1">
         {mode === "dashboard" ? (
           <div className="h-full overflow-auto">
+            {regionsOn && (
+              <div className="px-4 pt-3">
+                <a href="#/regions" className="mx-auto flex max-w-2xl items-center justify-between rounded-lg border border-sky-200 bg-sky-50 px-4 py-2 text-sm text-sky-900">
+                  <span>읍면동별 시세·거래량 지도</span>
+                  <span aria-hidden="true">지역 분석 →</span>
+                </a>
+              </div>
+            )}
             <Dashboard />
           </div>
         ) : mode === "map" ? (
