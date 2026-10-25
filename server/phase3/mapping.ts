@@ -21,7 +21,7 @@ export const REGION_DEALS_SQL = `
          END AS mapping_status
     FROM transactions t
     LEFT JOIN apartments a ON a.apartment_id = t.apartment_id
-    LEFT JOIN p3_regions r ON r.set_id = $1 AND r.level = 'UMD' AND r.region_code = left(a.legal_dong_code, 8) || '00'
+    LEFT JOIN p3_regions r ON r.set_id = $1::bigint AND r.level = 'UMD' AND r.region_code = left(a.legal_dong_code, 8) || '00'
    WHERE t.trade_type = 'sale' AND t.record_status = 'ACTIVE' AND t.sale_price > 0 AND t.area_m2 > 0
      AND t.contract_date >= $2 AND t.contract_date < $3`;
 
