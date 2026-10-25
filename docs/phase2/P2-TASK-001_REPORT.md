@@ -54,7 +54,7 @@
 | D9 | 기능 플래그 | 없음 | 서버 `PHASE2_PRICE_ANALYSIS_ENABLED`(기본 false), UI는 서버 상태 API로 판정(빌드 변수 추가 회피) |
 | D10 | 성능 | 배포 측정 p50 약 0.9초, 원인 미확정(OPERATIONS.md 6절) | Phase 2 목표(p95 0.8초) 판단 전에 원인 분리 측정 필요 |
 | **D12** | **표본 부족** | 12개월 기준 단지×면적 묶음 838개 중 3건 이상 175개(21%), 묶음당 중간값 1건. 단지×면적×월 1,540칸에 1,867건(칸당 약 1.2건) → "월 3건 이상"(AC-005) 월별 가격은 대부분 미표시. 36개월로 늘려도 월별 칸은 크게 개선되지 않음 **결정(2026-10-25, 사용자 승인): D안** — 가격 그래프는 개별 거래 점 + 분기 중위 보조선(분기 3건↑), 숫자는 기간 전체 통계(3건↑). 월별 중위 표시 제거. PRD v1.1 및 관련 문서 반영 |
-| D11 | 브랜치 | 이 세션은 `claude/jeju-realestate-mvp-analysis-6suje9`에만 푸시. Vercel Production 브랜치는 문서뿐인 `main` | Phase 2 전용 브랜치 사용 여부 결정. Production은 계속 수동 배포 |
+| D11 | 브랜치 | 이 세션은 `claude/jeju-realestate-mvp-analysis-6suje9`에만 푸시. Vercel Production 브랜치는 문서뿐인 `main` | **결정(2026-10-25, 사용자 승인): b안** — Phase 2는 `claude/phase2-price-analysis`(Phase 1 브랜치에서 분기)에서 개발, Phase 1 브랜치는 운영 기준 유지·Production 수동 배포. G5 승인 후 Phase 1 브랜치로 병합, main 정리는 그때 결정 |
 
 ## 6. 무료 운영(월 0원) 검증
 | 공급자 | 확인 내용 | 판정 |

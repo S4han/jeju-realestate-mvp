@@ -2,6 +2,12 @@
 
 새 세션에서 이 문서와 docs/ACCEPTANCE_RESULTS.md, tasks/TASK-009.md를 먼저 읽는다. 모든 외부 실행 전에 사용자 승인을 받는다(CLAUDE.md).
 
+## 브랜치 정책 (2026-10-25, 사용자 승인, P2-TASK-001 D11)
+- `claude/jeju-realestate-mvp-analysis-6suje9`: **Phase 1 운영 기준**. Production(`jeju-realestate-mvp.vercel.app`)은 이 브랜치에서만 **수동 배포**. Phase 1 수정은 여기서.
+- `claude/phase2-price-analysis`: **Phase 2 개발 전용**(위 브랜치에서 분기). Phase 1 수정이 생기면 이 브랜치로 병합해 가져온다. G5 승인 후 Phase 1 브랜치로 병합.
+- `main`: 문서뿐. Vercel Production 기준 브랜치지만 문서 커밋은 빌드 생략(OPERATIONS.md). main 정리(앱 코드 병합)는 Phase 2 G5 때 결정.
+- Phase 2 진행 상황은 `docs/phase2/P2-TASK-001_REPORT.md`부터 본다.
+
 ## 현재 상태 (2026-10-24)
 - TASK-001~008 완료(사용자 승인). TASK-009 승인됨, 단계별 승인 진행 중 — **1차 완료 승인(2026-10-24), 사용자 결정: 비공개 유지.** 재개 시 순서: 미확인 항목 확인 → Cron 가동(별도 승인) → 성능 원인 확인 → Production 승격 → 공개 범위 결정. 남은 일은 docs/OPERATIONS.md 5절 '공개 전 남은 결정'
 - 사용자 결정: 완전 비상업 / 신축 단지는 보류(A안) / 지도는 PAW_MAP 앱 키 공유(비즈월렛 미연결) / Vercel Hobby + Supabase Free
