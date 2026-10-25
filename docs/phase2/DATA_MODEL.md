@@ -8,6 +8,8 @@
 
 ## 신규 모델
 ### p2_monthly_price_stats
+> v1.1(PRD D12): 월별 중위가격은 화면에 쓰지 않는다. 이 테이블은 **월별 거래량**(trade_count)과 수집 완전성 중심으로 축소하고, 분기 보조선용 중위값은 분기 단위 집계(`p2_quarterly_price_stats` 후보: apartment_id, area_type_m2, contract_quarter, trade_count, median_price_won(3건 미만 NULL), data_version) 또는 원본 거래 계산으로 제공. 최종 구조는 P2-TASK-002에서 확정.
+
 (apartment_id, area_type_m2, contract_month) 복합 PK 후보; trade_count int NOT NULL; median_price_won numeric nullable; min_price_won numeric nullable; max_price_won numeric nullable; median_price_per_m2_won numeric nullable; data_version bigint; calculated_at timestamptz; completeness_status. 표본 3 미만이면 median 필드 NULL. 원화는 정확한 NUMERIC/정수로 보존. **전체 면적 월별 거래량**은 별도 합계 쿼리 또는 area_type NULL을 지원하는 별도 키 설계; NULL 포함 복합 PK는 그대로 사용 금지.
 ### p2_analysis_versions
 apartment_id PK, data_version bigint monotonic, source_watermark, status(READY/UPDATING/ERROR), updated_at. 단지별 버전이 원본 거래·집계·근거 목록·커버리지 스냅샷을 일관되게 참조하도록 설계.

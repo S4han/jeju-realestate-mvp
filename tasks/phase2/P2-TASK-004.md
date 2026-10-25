@@ -4,7 +4,7 @@
 > 범위: Phase 2 신규 파일만 추가. Phase 1 파일 수정 금지. 기능 플래그 기본 OFF. 사용자 수동 공개 승인 필수.
 
 ## 목표
-areas/summary/monthly/transactions/status API, 서버 검증, 버전 커서, 409, 캐시 무효화
+areas/summary/monthly/points/transactions/status API(PRD v1.1, 단일 함수), 서버 검증, 버전 커서, 409, 캐시 무효화
 
 ## 참조 문서
 docs/phase2/API_SPEC.md

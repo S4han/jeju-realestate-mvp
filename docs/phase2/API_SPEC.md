@@ -7,6 +7,7 @@
 GET /api/v2/analysis/apartments/{id}/areas
 GET /api/v2/analysis/apartments/{id}/summary?period=24&areaType=85
 GET /api/v2/analysis/apartments/{id}/monthly?period=24&areaType=85
+GET /api/v2/analysis/apartments/{id}/points?period=24&areaType=85
 GET /api/v2/analysis/apartments/{id}/transactions?period=24&areaType=85&pageSize=20&cursor=...
 GET /api/v2/analysis/apartments/{id}/status
 
@@ -32,3 +33,8 @@ GET /api/v2/analysis/apartments/{id}/status
 
 ## 캐시
 키 = p2:analysis:{apartmentId}:{areaType}:{period}:{metricType}:v{dataVersion}; TTL 24시간 이내 + 버전 기반 논리적 무효화. 인스턴스 로컬 메모리만으로 일관성 보장 금지. 동일 요청 중복 계산 억제, DB/캐시 실패 시 안전하게 응답.
+
+## v1.1 변경 (PRD D12)
+- `monthly`: 월별 **거래량·수집 상태** 전용. `medianPriceWon`·`priceStatus`는 제거하고 분기 배열을 함께 반환: `"quarterly":[{"quarter":"2026Q3","tradeCount":4,"medianPriceWon":530000000,"priceStatus":"AVAILABLE"}]` (3건 미만이면 `medianPriceWon:null`, `INSUFFICIENT_SAMPLE`).
+- `points`(신규): 가격 그래프용 유효 거래 점 전체 `[{"transactionId","contractDate","priceWon","areaM2","floor"}]`. 선택 면적 유형 필수(`all` 불가), 상한 500건(초과 시 `truncated:true`), 데이터 버전 포함. 점 수는 같은 조건의 `summary.tradeCount`와 일치해야 한다.
+- 함수 수(P2-TASK-001 D5): 분석 API는 하나의 함수에서 경로별로 처리한다.
