@@ -1,6 +1,6 @@
 # P2-TASK-001 결과 보고서 — 현행 구조·원천·비용 검증 (G1)
 
-작성 2026-10-24, 갱신 2026-10-25. 범위: 코드·스키마 대조(A), 무료 한도 문서 확인(D), 운영 DB 읽기 전용 조회(B, 사용자 PC에서 실행, 8절). **data.go.kr 호출(C)은 승인 전이라 수행하지 않음.**
+작성 2026-10-24, 갱신 2026-10-25. 범위: 코드·스키마 대조(A), 무료 한도 문서 확인(D), 운영 DB 읽기 전용 조회(B, 사용자 PC에서 실행, 8절). data.go.kr 표본 호출(C, 2회, 9절).
 표기: ✅ 확인(근거 있음) · ⬜ 미확인 · ⚠ 설계와 차이(결정 필요).
 
 ## 1. Phase 1 실제 스키마 (근거: `db/migrations/0001~0004`, `server/collect/*`)
@@ -43,7 +43,7 @@
 ## 5. 설계와의 차이·위험·결정 필요
 | # | 항목 | 내용 | 제안 |
 |---|---|---|---|
-| D1 | **과거 데이터** | 24개월 추가 수집(48호출) + 과거 월 정기 재검증 | C 단계 표본 호출 → 승인 후 일괄 수집(별도 승인) |
+| D1 | **과거 데이터** | 24개월 추가 수집(48호출) + 과거 월 정기 재검증 | **결정(2026-10-25, 사용자 승인): 범위 b·실행 E1** — 2023-11~2025-10 매매만(2개 시×24개월≈48호출), 사용자 PC에서 Phase 2 전용 스크립트로 1회 실행(사전 백업, 호출 상한 60). C 단계 결과는 9절 |
 | D2 | 같은 조건 거래 | 원천에서 중복 판별 불가. 운영 DB에 같은 조건 유효 매매 키 11개 | **결정(2026-10-25, 사용자 승인): c안** — 각각 집계 + 근거 목록에 "같은 조건 신고 N건(원천 기준)" 표시, 건수 운영 지표 추적. PRD v1.3 반영 |
 | D3 | 면적 표시 불일치 | Phase 1 버림 vs Phase 2 반올림 — 유효 매매의 69%가 탭마다 다른 ㎡로 표시됨. **결정(2026-10-25, 사용자 승인): b안** — Phase 2도 정수부(floor(area))로 통일, PRD v1.2 반영 | Phase 1은 그대로, 분석 탭에 "전용면적 반올림 기준" 문구. 또는 Phase 1 칩을 반올림으로 통일(Phase 1 수정) |
 | D4 | **Phase 1 파일 수정 금지** vs 탭 추가 | 상세 화면에 탭을 붙이려면 `TransactionsPage.tsx`·`dev-server.ts`·환경변수 노출 검사 허용목록 등 최소 수정이 불가피 | **결정(2026-10-25, 사용자 승인): b안** — `TransactionsPage.tsx`·`server/dev-server.ts`에 플래그로 감싼 최소 연결만 허용, 탭 표시는 서버 상태 API로 판정(노출 검사 허용 목록 수정 불필요). IMPLEMENTATION_PLAN·ARCHITECTURE·P2-TASK-005·PRD v1.4 반영 |
@@ -90,3 +90,13 @@
 | 수집 이력 | MOLIT_SALE·MOLIT_RENT × 2개 시 × 12개월 모두 최신 SUCCESS, PARTIAL/FAILED/RUNNING 0. 원천별 작업 32회 / 24 (시,월) → 재수집 흔적 있음(재검증 구분 기록은 없음) |
 | 마지막 수집 완료 | 2026-10-24 04:57 UTC → Cron 미가동이라 36시간(Phase 1 기준) 경과 후 화면에 갱신 지연 안내 표시 예정 |
 | 용량 | DB 18MB, transactions 4.5MB, match_reviews 1.3MB, apartments 0.7MB |
+
+## 9. 과거 월 표본 호출 결과 (C, 2026-10-25, 사용자 PC, 2회)
+`RTMSDataSvcAptTradeDev`(매매 상세), `DEAL_YMD=202311`, `numOfRows=1000`. DB 쓰기 없음, 키 미출력.
+| 항목 | 결과 |
+|---|---|
+| 응답 | 서귀포시 HTTP 200·`resultCode 000`·totalCount 51·51행 수신. 제주시도 정상 응답(화면 캡처 범위 밖, 고유 aptSeq로 추정 약 115개 단지) |
+| 필드 | 32개: aptDong, aptNm, aptSeq, bonbun, bubun, buildYear, buyerGbn, cdealDay, cdealType, dealAmount, dealDay, dealMonth, dealYear, dealingGbn, estateAgentSggNm, excluUseAr, floor, jibun, landCd, landLeaseholdGbn, rgstDate, roadNm, roadNmBonbun, roadNmBubun, roadNmCd, roadNmSeq, roadNmSggCd, roadNmbCd, sggCd, slerGbn, umdCd, umdNm — 현행 수집 코드가 쓰는 필드 모두 존재 |
+| 서귀포시 요약 | 해제 2건, aptSeq 51/51, 고유 단지 37, 금액 7,000만~5.2억(중앙 2.18억), 면적 17.1~85.0㎡, 계약일 2023-11-01~29 |
+| 매칭 전망 | 두 시 고유 aptSeq **152개 중 133개(87.5%)가 현재 확정 매칭(`apartment_source_ids` MOLIT_APTSEQ)에 존재**. 나머지 19개는 지번 규칙으로 일부 매칭 가능, 실제 매칭률은 수집 후 확인 |
+| 결론 | 약 3년 전 데이터도 같은 형식으로 제공 → 범위 b 수집 가능. 월 1페이지라 호출 수 추정(48) 유지 |
