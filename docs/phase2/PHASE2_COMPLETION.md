@@ -15,7 +15,7 @@
 | P2-TASK-007 비용·장애·출시(G5) | 과금 차단 확인, OFF/ON 복구, Production 반영 | `P2-TASK-007_GATE.md` |
 
 ## 운영 정보
-- 코드: Production 배포 `dpl_5cNew7XB…`(8d0925a), 브랜치 `claude/jeju-realestate-mvp-analysis-6suje9`(= `claude/phase2-price-analysis`).
+- 코드: Production 배포 `dpl_HJojQPWE…`(d203298, 2026-10-25 화면 개선: 외톨이 분기 중위 표시·탭 건수 기준 안내; 이전 `dpl_5cNew7XB…` 8d0925a), 브랜치 `claude/jeju-realestate-mvp-analysis-6suje9`(= `claude/phase2-price-analysis`).
 - 환경 변수(Production): `PHASE2_PRICE_ANALYSIS_ENABLED=true`, `P2_CURSOR_SECRET`(sensitive). Preview는 Phase 2 브랜치 한정으로 별도 값.
 - 끄기: 플래그 `false` + 재배포(약 1분). 전체 롤백: `dpl_89EQW5ZA…`(22578e5).
 - 비용: Vercel Hobby(초과 과금 경로 없음), Supabase Free(지출 한도 활성), 카카오맵 무료 쿼터. Phase 2는 외부 API 호출·Cron·DB 쓰기 없음.
