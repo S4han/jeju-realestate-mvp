@@ -13,7 +13,7 @@ Phase 1 기존 수집 → 정규화·매칭 확정 → 영향 단지/월 식별 
 단지별 버전 변경 시 캐시 키 변경. 집계 계산 도중 원본 변경 발생 시 재시도/폐기; 버전 전환과 월별 집계 저장은 원자적. 원본 조회·커버리지·근거 페이지가 버전과 일치하도록 읽기 스냅샷 또는 전후 버전 확인; 재검증 실패 시 안전하게 409/재시도. 재집계 실패 시 기존 정상 스냅샷 보존, STALE/ERROR 안내.
 
 ## 기능 격리
-PHASE2_PRICE_ANALYSIS_ENABLED=false 기본. UI와 서버 API 양쪽에서 검증. Phase 1 라우트·검색·지도·매매/전월세 조회는 변경하지 않음. 별도 브랜치에서 검증 후 수동 승인. 공용 DB 장애는 Phase 1까지 영향을 줄 수 있으므로 쿼리 비용/인덱스/동시성 제한 필수.
+PHASE2_PRICE_ANALYSIS_ENABLED=false 기본. UI와 서버 API 양쪽에서 검증. Phase 1 라우트·검색·지도·매매/전월세 조회는 변경하지 않음(예외: IMPLEMENTATION_PLAN 'Phase 1 연결 부위 예외'의 플래그로 감싼 탭 연결·개발 서버 경로). UI 탭 표시는 서버 상태 API(`/api/v2/analysis/apartments/{id}/status`, OFF면 404)로 판정. 별도 브랜치에서 검증 후 수동 승인. 공용 DB 장애는 Phase 1까지 영향을 줄 수 있으므로 쿼리 비용/인덱스/동시성 제한 필수.
 
 ## 성능 목표 (검증 전)
 summary p95 800ms, monthly p95 800ms, areas p95 500ms, evidence p95 1000ms. EXPLAIN ANALYZE, 무료 DB 용량, cold start, 36개월 최대 요청, 동시성 측정. 불충족 시 인덱스/쿼리·캐시 최적화 제안, 비용 발생 옵션은 금지.
