@@ -5,10 +5,10 @@
 
 ## 공통
 GET /api/v2/analysis/apartments/{id}/areas
-GET /api/v2/analysis/apartments/{id}/summary?period=24&areaType=85
-GET /api/v2/analysis/apartments/{id}/monthly?period=24&areaType=85
-GET /api/v2/analysis/apartments/{id}/points?period=24&areaType=85
-GET /api/v2/analysis/apartments/{id}/transactions?period=24&areaType=85&pageSize=20&cursor=...
+GET /api/v2/analysis/apartments/{id}/summary?period=24&areaType=84
+GET /api/v2/analysis/apartments/{id}/monthly?period=24&areaType=84
+GET /api/v2/analysis/apartments/{id}/points?period=24&areaType=84
+GET /api/v2/analysis/apartments/{id}/transactions?period=24&areaType=84&pageSize=20&cursor=...
 GET /api/v2/analysis/apartments/{id}/status
 
 입력: period ∈ {12,24,36}; areaType 양의 정수 또는 all; pageSize 1~100, 기본 20; 정렬 allowlist; 단지 ID 기존 형식. 존재하지 않는 단지 404, 입력 오류 400, 비활성화 404 또는 503 중 정책 확정 후 일관 적용, 내부 오류 안전한 5xx. 서버 파라미터 검증·쿼리 바인딩 필수.
@@ -19,7 +19,7 @@ GET /api/v2/analysis/apartments/{id}/status
 ## 응답 예시 (가상 데이터)
 ```json
 {
-  "apartmentId":"example", "periodMonths":24, "areaTypeM2":85,
+  "apartmentId":"example", "periodMonths":24, "areaTypeM2":84,
   "summary":{"tradeCount":27,"medianPriceWon":520000000,"minPriceWon":470000000,"maxPriceWon":610000000,"medianPricePerM2Won":6120000,"yearOverYearChangePct":4.0,"comparisonStatus":"AVAILABLE"},
   "monthly":[{"contractMonth":"202610","tradeCount":2,"medianPriceWon":null,"priceStatus":"INSUFFICIENT_SAMPLE","collectionStatus":"COMPLETE","isCurrentMonth":true}],
   "dataStatus":{"completeness":"COMPLETE","freshness":"FRESH","aggregation":"READY","lastSuccessfulSyncAt":"2026-10-24T10:00:00+09:00","missingMonths":[],"dataVersion":12,"provisionalCurrentMonth":true}
