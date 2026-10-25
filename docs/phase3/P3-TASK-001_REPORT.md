@@ -78,3 +78,12 @@
 - **P3-D5 Phase 2 연결**: 단지 상세(`#/apartments/{id}`) 링크 + 안내(추천, 추가 수정 없음).
 - **브랜치**: `claude/phase3-region-analysis`(Production 브랜치 최신 + Phase 3 문서)에서 개발.
 - **운영 DB 읽기 전용 조회**(5절 SQL) 실행 여부 — 사용자 PC, 결과로 P3-D1·D2와 기본 기간 타당성 확정.
+
+## 9. 결정 기록 (2026-10-25, 사용자 "추천대로 진행")
+- **P3-D1 = B**: 지역·경계 **참조 테이블만** 추가(Phase 3 전용 마이그레이션, RLS 포함). 통계는 읽기 전용 REPEATABLE READ 스냅샷에서 요청 시 계산, `snapshotId` = 유효 거래·지역 매핑·수집 상태·경계 버전의 지문. 월별 사전 집계·스냅샷·ACTIVE 포인터·runs 테이블은 만들지 않음. "검증 후 원자적 교체"는 경계·지역 참조 데이터 버전 적재에 적용(새 버전 검증 후 단일 트랜잭션으로 활성 표시 전환).
+- **P3-D2**: 지역 판정 = 단지 `legal_dong_code` 앞 8자리+`00`(읍면동). 거래 `sgg_code+umd_code` 앞 3자리와 다르면 MAPPING_UNVERIFIED로 격리·건수 표시.
+- **P3-D3**: Phase 1 예외 수정 허용 — `src/App.tsx`(v3 status API 200일 때만 보이는 진입 탭), `server/dev-server.ts`(v3 개발 경로). 그 외 Phase 1·2 파일 수정 금지.
+- **P3-D4**: v3 API 전체를 단일 함수로(배포 함수 총 10개).
+- **P3-D5**: Phase 2 연결은 단지 상세 `#/apartments/{id}` 링크 + "가격 분석 탭" 안내.
+- **브랜치**: `claude/phase3-region-analysis`.
+- **운영 DB 읽기 전용 조회**: 승인. 실행 도구 `scripts/phase3/windows/region-profile.ps1`(사용자 PC). 결과는 이 보고서 10절에 기록 예정.
