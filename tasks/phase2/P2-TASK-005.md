@@ -20,3 +20,12 @@ docs/phase2/PRD.md
 
 ## 제한
 검증·개발은 Claude Code 담당. 이 문서 생성 시 실제 API 호출·DB 변경·코드 개발은 수행하지 않음. 기능 플래그 기본 OFF, 월 0원 목표, 비밀키 보호.
+
+## 결과 (2026-10-25)
+- 신규: `src/phase2/api.ts`(v2 클라이언트, status 200일 때만 탭), `src/phase2/PriceAnalysis.tsx`(기간 12/24/36·면적 유형 칩·요약 카드·가격 그래프(개별 거래 점 + 분기 중위 보조선, 분기 사이 공백은 끊김)·월별 거래량(미수집 빗금, 이번 달/일부 수집 흐림)·근거 거래 커서 더 보기·409 시 처음부터 다시 보기·표로 보기·툴팁), `tests/e2e/phase2.e2e.mjs`.
+- 한 화면의 모든 응답은 같은 `dataVersion`이어야 표시(다르면 1회 재조회 후 오류 안내).
+- 차트 색: 범주 슬롯 1·2(#2a78d6, #eb6834) — dataviz 검증 스크립트 라이트/다크 모두 통과. 앱이 라이트 전용이라 다크 모드는 미적용.
+- Phase 1 수정: `src/components/TransactionsPage.tsx`만(D4) — status 조회, 3번째 탭, 분석 중 기존 필터·목록 숨김.
+- 테스트: 단위·DB 125/125 통과. E2E(합성 운영 규모 DB `p2_design`, 390px) 17/17 통과 — 플래그 OFF: 탭 2개·v2 요청은 status 1건(404)뿐·전월세 탭 정상 / ON: 카드·그래프·툴팁·근거 페이징·가로 넘침 없음·all 가격 미표시·all에서 points/transactions 미호출.
+- 실행: `DATABASE_URL=... E2E_APARTMENT_ID=1 node tests/e2e/phase2.e2e.mjs`
+- 미검증: 미수집·표본 부족·STALE 화면(합성 DB에 해당 상태 없음, API 판정은 DB 테스트로 검증), 실데이터 화면(Preview 플래그 ON 필요), 스크린리더 실기기 확인. 기존 지도 E2E(`map.e2e.mjs`)는 로컬 UI DB 문제로 변경 전 코드에서도 같은 실패 — 이번 변경과 무관.

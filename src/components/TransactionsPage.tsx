@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { fetchApartment, fetchTransactions, type ApartmentDetail, type DealRow, type SortKey, type TradeType, type TransactionList } from "../api";
 import { CITY_LABEL, displayAddress, formatArea, formatFloor, formatKrw, formatRent } from "../format";
+import { isAnalysisAvailable } from "../phase2/api";
+import { PriceAnalysis } from "../phase2/PriceAnalysis";
 
 const SORT_LABEL: Record<SortKey, string> = {
   date_desc: "최신순",
@@ -23,10 +25,14 @@ export function TransactionsPage({ id }: { id: string }) {
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [retry, setRetry] = useState(0);
   const [open, setOpen] = useState<string | null>(null);
+  // Phase 2 (D4): the price-analysis tab appears only when its status API answers 200 (feature flag on).
+  const [analysisTab, setAnalysisTab] = useState(false);
+  const [analysis, setAnalysis] = useState(false);
 
   useEffect(() => {
     const ctrl = new AbortController();
     fetchApartment(id, ctrl.signal).then(setApt).catch(() => {});
+    isAnalysisAvailable(id, ctrl.signal).then((ok) => !ctrl.signal.aborted && setAnalysisTab(ok));
     return () => ctrl.abort();
   }, [id]);
 
@@ -77,26 +83,38 @@ export function TransactionsPage({ id }: { id: string }) {
               {apt.approved_on ? ` · ${apt.approved_on.slice(0, 4)}년 사용승인` : ""}
             </p>
           )}
-          <div className="mt-3 grid grid-cols-2 rounded-lg bg-slate-100 p-1 text-sm" role="tablist">
+          <div className={`mt-3 grid ${analysisTab ? "grid-cols-3" : "grid-cols-2"} rounded-lg bg-slate-100 p-1 text-sm`} role="tablist">
             {(["sale", "rent"] as const).map((t) => (
               <button
                 key={t}
                 type="button"
                 role="tab"
-                aria-selected={type === t}
+                aria-selected={!analysis && type === t}
                 onClick={() => {
+                  setAnalysis(false);
                   setType(t);
                   setArea(null);
                   setOpen(null);
                 }}
-                className={`rounded-md py-1.5 ${type === t ? "bg-white font-medium shadow-sm" : "text-slate-600"}`}
+                className={`rounded-md py-1.5 ${!analysis && type === t ? "bg-white font-medium shadow-sm" : "text-slate-600"}`}
               >
                 {t === "sale" ? "매매" : "전월세"}
                 {apt && ` ${t === "sale" ? apt.recent.sale_count : apt.recent.rent_count}건`}
               </button>
             ))}
+            {analysisTab && (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={analysis}
+                onClick={() => setAnalysis(true)}
+                className={`rounded-md py-1.5 ${analysis ? "bg-white font-medium shadow-sm" : "text-slate-600"}`}
+              >
+                가격 분석
+              </button>
+            )}
           </div>
-          <div className="mt-2 flex items-center gap-2">
+          <div className={`mt-2 flex items-center gap-2 ${analysis ? "hidden" : ""}`}>
             <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto" aria-label="전용면적 필터">
               {[null, ...(first?.area_groups.map((g) => g.m2) ?? [])].map((m) => (
                 <button
@@ -122,6 +140,8 @@ export function TransactionsPage({ id }: { id: string }) {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 pt-3">
+        {analysis && <PriceAnalysis id={id} />}
+        <div hidden={analysis}>
         {first && first.data.missing_months.length > 0 && (
           <p role="alert" className="mb-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
             {first.data.missing_months.map(ym).join(", ")} 데이터를 수집하지 못해 해당 기간 거래가 빠져 있을 수 있습니다.
@@ -163,6 +183,7 @@ export function TransactionsPage({ id }: { id: string }) {
             )}
           </>
         )}
+        </div>
         <footer className="mt-6 space-y-1 text-[11px] leading-4 text-slate-500">
           <p>출처: {first?.data.source ?? "국토교통부 실거래가 공개시스템(공공데이터포털)"}, 한국부동산원 공동주택 단지 식별정보.</p>
           {first?.data.last_success_at && <p>마지막 데이터 갱신: {new Date(first.data.last_success_at).toLocaleString("ko-KR")}</p>}
