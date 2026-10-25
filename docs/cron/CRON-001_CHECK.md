@@ -71,3 +71,9 @@
 - 테스트: `tests/collectDaily.db.test.ts` 6건(일시 실패 후 복구로 최신 작업 SUCCESS, 지속 실패는 1회만 재시도·기존 데이터 유지, 키 오류 미재시도, 상한 중단 후 미재시도, 재시도 중 상한 도달 시 중단). 전체 **236/236**, 빌드 통과.
 - 로컬 모의(수집 함수 전체 경로, 가짜 data.go.kr): 일시 실패(1차 3회 실패) → 재시도 SUCCESS, 23회·18.7초 / 지속 실패 → 재시도도 FAILED, 25회·25.5초. 로그 요약 줄 확인.
 - ⚠ 남은 위험: data.go.kr이 응답 없이 멈추면 호출당 30초 대기 → 300초 안에 약 10회 후 함수 중단(진행 중 달은 반영 안 됨, `RUNNING` 기록, 다음 날 복구). 데이터 손상 없음.
+
+## 9. Production 배포 (2026-10-25, 사용자 승인, 수집은 아직 꺼짐)
+- Production 브랜치 fast-forward → `8568843`, 배포 `dpl_2Gkk4KJz…`(READY). 이전 Production: `dpl_AhZS2nsL…`(117381d, Phase 3 공개).
+- 회귀 확인: 첫 화면 200, 검색 200, Phase 2 분석 status 200, Phase 3 지역 status 200(snapshot `1-3659bf993805d395` 동일).
+- 수집 함수: Production에 `CRON_SECRET`·`DATA_GO_KR_SERVICE_KEY` 없음(환경 변수 목록 확인) → 예약 실행·외부 요청 모두 401, data.go.kr 호출 없음. 외부에서 호출해 본 결과 401(배포 보호 단계인지 함수 응답인지 이 환경에서 구분 불가 — 함수의 비밀값 없음 401은 로컬·`tests/security.test.ts`로 검증).
+- 다음: 사용자 PC `cron-check.ps1` 결과 확인 → 사용자가 대시보드에서 두 비밀값 입력 → 재배포 → 첫 실행 확인.
