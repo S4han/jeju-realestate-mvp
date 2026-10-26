@@ -23,7 +23,7 @@
 | Vercel 런타임 로그 보존(검색어가 URL에 포함, FR-026) | ⬜ | Hobby 보존 기간 미확인 |
 | Supabase Free, 유료 add-on(IPv4 등) 미사용 | ✅ | 사용자 결정, Shared pooler로 접속 |
 | Supabase 결제수단 연결 여부·한도 초과 시 동작 | ⬜ | 조직 Billing 화면 확인 필요 |
-| Supabase 7일 비활성 일시정지 | ⬜ | 일일 Cron이 DB를 쓰므로 방지될 것으로 보나 **Cron이 아직 동작하지 않음**. 공개 전 Cron 가동 또는 정지 시 복구 절차 확인 |
+| Supabase 7일 비활성 일시정지 | ⬜ | 일일 Cron이 DB를 쓰므로 방지될 것으로 봄. Cron 가동 2026-10-26(`docs/cron/CRON-001_CHECK.md`). 정지 시 복구 절차는 미확인 |
 | 카카오 월 쿼터 여유 | ✅ | 월 3,000,000 중 4,371 사용(2026-10-24, PAW_MAP 합산) |
 | 카카오 쿼터 초과 시 차단 vs 과금, 비즈월렛 연결 여부 | ⬜ | **공개 전 필수**. 브라우저 SDK라 서버에서 호출을 막을 수 없음 |
 | data.go.kr 호출 예산 | ✅ | 실행당 30회·일 300회 상한, 도달 시 호출 전 중단(`collect.db.test.ts`) |
@@ -65,7 +65,7 @@
 
 ## 5. 공개 전 남은 결정
 - [ ] 위 ⬜ 항목(특히 카카오·Vercel·Supabase의 한도 초과 시 동작) 확인
-- [ ] Cron 가동(별도 승인, data.go.kr 호출)
+- [x] Cron 가동(2026-10-26, 사용자 승인·확인): Production 전용 `CRON_SECRET`·`DATA_GO_KR_SERVICE_KEY`, 매일 03시대 KST 최근 4개월 수집 + 매칭, 일시 실패 달 1회 재시도, 실행 제한 300초. 첫 실행(수동) 16회 호출·약 10초·전부 성공. 예약 실행 3회 연속 정상 확인 후 PC 일일 수집 중단 예정. 상세 `docs/cron/CRON-001_CHECK.md`
 - [x] Production을 현재 브랜치 코드로 배포(2026-10-24, `5882caf`, `dpl_GHoGj…`). 접근 보호 유지(비공개). 주의: 프로덕션 브랜치 설정은 main이라 브랜치 push는 Preview로만 배포되고, Production 갱신은 수동 배포가 필요
 - [x] 카카오 허용 도메인에 Production 도메인 `https://jeju-realestate-mvp.vercel.app` 추가(사용자, 2026-10-24) — 휴대폰에서 Production 지도 표시 확인(사용자). Production 응답에는 Vercel이 `noindex`를 붙이지 않지만 로그인 보호로 크롤링 불가
 - [ ] 접근 보호 해제 여부(공개 범위) — 사용자 최종 결정
