@@ -77,3 +77,10 @@
 - 회귀 확인: 첫 화면 200, 검색 200, Phase 2 분석 status 200, Phase 3 지역 status 200(snapshot `1-3659bf993805d395` 동일).
 - 수집 함수: Production에 `CRON_SECRET`·`DATA_GO_KR_SERVICE_KEY` 없음(환경 변수 목록 확인) → 예약 실행·외부 요청 모두 401, data.go.kr 호출 없음. 외부에서 호출해 본 결과 401(배포 보호 단계인지 함수 응답인지 이 환경에서 구분 불가 — 함수의 비밀값 없음 401은 로컬·`tests/security.test.ts`로 검증).
 - 다음: 사용자 PC `cron-check.ps1` 결과 확인 → 사용자가 대시보드에서 두 비밀값 입력 → 재배포 → 첫 실행 확인.
+
+## 10. 자동 수집 가동 (2026-10-26)
+- 사용자가 대시보드에서 `DATA_GO_KR_SERVICE_KEY`·`CRON_SECRET` 입력 → `CRON_SECRET` 값 앞뒤 공백으로 Vercel 빌드 거부 2회(`DhGxgxE1…`, `7Ac5kLMT…`, Production 미반영).
+- 사용자 요청("대신 설정해")으로 API 설정: `CRON_SECRET` 공백 없는 값으로 교체, 두 변수 모두 **Production 전용**(Preview 해제). 공공데이터 키 값은 변경하지 않음. 값은 저장소에 기록하지 않음. ⚠ `CRON_SECRET` 값은 작업 대화에 1회 나타남(위험 낮음: 일일 호출 상한 안에서 수집을 미리 실행시키는 것만 가능).
+- 재배포 `dpl_3G6Hbm7V…` READY. data-status 200, 지역 분석 status 200(snapshot 동일).
+- 가동 전 상태: 전월세 마지막 수집 2026-10-24(이틀 경과 → DELAYED), 매매 2026-10-25.
+- 다음: 첫 예약 실행(2026-10-27 03시대 KST) 또는 대시보드 수동 실행 → 런타임 로그 `cron collect` 요약·실행 시간, data-status, 데이터 버전 확인.
