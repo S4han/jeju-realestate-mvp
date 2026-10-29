@@ -13,14 +13,14 @@
 
 빌드 생략(Ignored Build Step, 2026-10-24): `git diff --quiet HEAD^ HEAD -- . ':(exclude)docs' ':(exclude)tasks' ':(exclude)*.md'` — 문서(`docs/`, `tasks/`, `*.md`)만 바뀐 커밋은 빌드하지 않는다(종료 코드 0 = 생략). 계기: Production 브랜치 `main`에 문서만 있어 Phase 2 문서 커밋마다 Production 빌드가 실패(`npm ci`)하고 실패 메일이 옴. 실패 배포는 Production 주소를 바꾸지 않았음.
 
-환경 변수(Vercel, Production·Preview): `DATABASE_URL`(Sensitive), `DATABASE_SSL=require`, `VITE_KAKAO_MAP_JS_KEY`, (Cron 승인 후) `CRON_SECRET`, `DATA_GO_KR_SERVICE_KEY`. 값은 저장소·로그·문서에 남기지 않는다.
+환경 변수(Vercel, Production·Preview): `DATABASE_URL`(Sensitive), `DATABASE_SSL=require`, `VITE_KAKAO_MAP_JS_KEY`. Production 전용(Sensitive, 2026-10-26): `CRON_SECRET`(앞뒤 공백 있으면 빌드 실패), `DATA_GO_KR_SERVICE_KEY`(Decoding 키). 값은 저장소·로그·문서에 남기지 않는다.
 
 ## 2. 월 0원 체크리스트
 | 항목 | 상태 | 근거·비고 |
 |---|---|---|
 | Vercel Hobby 사용(유료 플랜 아님) | ✅ | 관측 지표 조회가 "Pro 필요"(402)로 거부됨 |
 | Vercel 한도 도달 시 동작(정지 vs 과금) | ⬜ | Hobby는 결제수단 없이 쓰는 플랜으로 알려져 있으나 이 계정에서 미확인. Usage 화면·약관으로 확인 |
-| Vercel 런타임 로그 보존(검색어가 URL에 포함, FR-026) | ⬜ | Hobby 보존 기간 미확인 |
+| Vercel 런타임 로그 보존(검색어가 URL에 포함, FR-026) | ✅ | Hobby 1시간(2026-10-27, 로그 API가 1시간 넘는 조회 거부) |
 | Supabase Free, 유료 add-on(IPv4 등) 미사용 | ✅ | 사용자 결정, Shared pooler로 접속 |
 | Supabase 결제수단 연결 여부·한도 초과 시 동작 | ⬜ | 조직 Billing 화면 확인 필요 |
 | Supabase 7일 비활성 일시정지 | ⬜ | 일일 Cron이 DB를 쓰므로 방지될 것으로 봄. Cron 가동 2026-10-26(`docs/cron/CRON-001_CHECK.md`). 정지 시 복구 절차는 미확인 |
@@ -30,10 +30,19 @@
 | 공개 Data API(Supabase REST) 차단 | ✅ | publishable 키 조회 → 401 `42501`(3개 테이블) |
 | 배포 접근 보호 | ✅ | Vercel 인증 `all_except_custom_domains`, `x-robots-tag: noindex` |
 
-## 3. 일상 점검 (공개 후, 주 1회 권장)
+## 3. 수집 운영 (2026-10-29부터)
+| 작업 | 주기 | 방법 |
+|---|---|---|
+| 실거래 수집(최근 4개월 매매·전월세) + 단지 매칭 | **매일 자동**, 03시대 KST | Vercel Cron(`api/cron/collect-transactions.ts`). 일시 실패 달은 같은 실행에서 1회 재시도. 실행 약 10~13초·호출 16회(2026-10-27~29 3회 연속 정상, `docs/cron/CRON-001_CHECK.md`) |
+| PC 일일 수집 | **중단**(2026-10-29) | 자동 수집으로 대체. 자동 수집이 이틀 넘게 실패할 때만 PC에서 `npm run collect -- --mode incremental --max-calls 20` + 매칭 |
+| 4개월 이전 달의 해제·정정 반영 | 분기 1회 | PC에서 과거 월 재수집(data.go.kr 호출 → 승인 후, 실행 전 백업) |
+| DB 백업 | 분기 1회 + 큰 작업 전 | PC에서 `pg_dump`(`scripts/windows/supabase-setup.ps1` 절차 참고), 원본 파일은 저장소에 넣지 않음 |
+- 확인 방법: 화면 지연 배너 또는 `/api/system/data-status`의 `status`가 `OK`가 아니면 Vercel → Logs에서 `cron collect` 요약 줄(로그 보관 1시간) 또는 `sync_jobs` 오류 코드 확인.
+
+## 3-1. 일상 점검 (공개 후, 주 1회 권장)
 1. 화면 상단 "최신 데이터 기준" 시각이 하루 이내인지, 지연 배너가 없는지
 2. Vercel → Logs: `error` 레벨 로그(설정 오류는 `Invalid server environment: <변수명>`으로 남음)
-3. Vercel Cron 실행 기록, `sync_jobs` 최근 상태(`/api/system/data-status`)
+3. Vercel Cron 실행 기록, `sync_jobs` 최근 상태(`/api/system/data-status`가 `OK`, 매일 03시대 갱신)
 4. Vercel·Supabase Usage, 카카오 쿼터 사용률
 
 ## 4. 장애·롤백 절차
